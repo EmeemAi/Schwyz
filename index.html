@@ -121,9 +121,8 @@
             <img 
               src="logo.png" 
               alt="SCHWYZ Logo" 
-              className={`${sizes[size]} w-auto object-contain`}
+              className={`${sizes[size]} w-auto object-contain image-render-auto`}
               referrerPolicy="no-referrer"
-              style={{ filter: 'brightness(0) invert(1)' }} // Invertir si el logo es negro para que se vea blanco sobre el fondo oscuro
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.parentElement.innerHTML = '<span class="text-white font-extrabold tracking-tight text-5xl">SCHWYZ</span>';

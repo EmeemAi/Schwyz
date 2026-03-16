@@ -12,7 +12,7 @@
         theme: {
           extend: {
             colors: {
-              caccia: {
+              schwyz: {
                 blue: '#002654',
                 dark: '#001a3d',
                 yellow: '#FFC700',
@@ -73,8 +73,9 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-caccia-blue text-white antialiased selection:bg-caccia-yellow selection:text-caccia-blue">
+<body class="bg-schwyz-blue text-white antialiased selection:bg-schwyz-yellow selection:text-schwyz-blue">
     
     <!-- Contenedor Raíz de React -->
     <div id="root"></div>
@@ -117,8 +118,7 @@
         };
         return (
           <div className={`font-extrabold tracking-tight flex items-center justify-center select-none ${textSize[size]} ${className}`}>
-            <span className="text-white">CACCIA</span>
-            <span className="text-caccia-yellow ml-1">+</span>
+            <span className="text-white">SCHWYZ</span>
           </div>
         );
       };
@@ -128,7 +128,7 @@
         const baseStyles = "group w-full flex items-center justify-between px-6 py-4 rounded-xl transition-all duration-300 transform border backdrop-blur-sm relative overflow-hidden cursor-pointer no-underline";
         
         const variants = {
-          primary: "bg-gradient-to-br from-white to-gray-100 border-white/50 text-caccia-blue hover:shadow-lg hover:shadow-white/10 hover:-translate-y-1",
+          primary: "bg-gradient-to-br from-white to-gray-100 border-white/50 text-schwyz-blue hover:shadow-lg hover:shadow-white/10 hover:-translate-y-1",
           secondary: "bg-white/5 border-white/20 text-white hover:bg-white/10 hover:border-white/40 hover:-translate-y-1",
           whatsapp: "bg-gradient-to-r from-[#25D366] to-[#128C7E] border-transparent text-white hover:shadow-lg hover:shadow-green-500/20 hover:-translate-y-1",
         };
@@ -145,20 +145,20 @@
 
             <div className="flex items-center gap-4 relative z-10 flex-1">
               {icon && (
-                <div className={`p-2 rounded-lg shrink-0 ${variant === 'primary' ? 'bg-caccia-blue/10' : 'bg-white/20'} flex items-center justify-center`}>
+                <div className={`p-2 rounded-lg shrink-0 ${variant === 'primary' ? 'bg-schwyz-blue/10' : 'bg-white/20'} flex items-center justify-center`}>
                   {icon}
                 </div>
               )}
               <div className="flex flex-col items-start text-left">
                 <span className="font-bold text-base sm:text-lg leading-tight">{label}</span>
                 {subLabel && (
-                  <span className={`text-xs mt-0.5 font-medium ${variant === 'primary' ? 'text-caccia-blue/70' : 'text-white/80'}`}>
+                  <span className={`text-xs mt-0.5 font-medium ${variant === 'primary' ? 'text-schwyz-blue/70' : 'text-white/80'}`}>
                     {subLabel}
                   </span>
                 )}
               </div>
             </div>
-            <div className={`transition-transform group-hover:translate-x-1 shrink-0 ${variant === 'primary' ? 'text-caccia-blue' : 'text-white/80'}`}>
+            <div className={`transition-transform group-hover:translate-x-1 shrink-0 ${variant === 'primary' ? 'text-schwyz-blue' : 'text-white/80'}`}>
                <Icons.ChevronRight />
             </div>
           </a>
@@ -170,12 +170,12 @@
         <div className="space-y-1.5 group">
           <label className="text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wide">{label}</label>
           <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-caccia-yellow/70 group-focus-within:text-caccia-yellow transition-colors flex items-center">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-schwyz-yellow/70 group-focus-within:text-schwyz-yellow transition-colors flex items-center">
               <Icon />
             </div>
             <input 
               {...props}
-              className="w-full bg-black/20 border border-white/10 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-caccia-yellow/50 focus:bg-black/30 focus:ring-1 focus:ring-caccia-yellow/50 transition-all shadow-inner"
+              className="w-full bg-black/20 border border-white/10 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-schwyz-yellow/50 focus:bg-black/30 focus:ring-1 focus:ring-schwyz-yellow/50 transition-all shadow-inner"
             />
           </div>
         </div>
@@ -236,13 +236,13 @@
         };
 
         return (
-          <main className="min-h-screen bg-gradient-to-br from-caccia-blue via-[#001a3d] to-black flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+          <main className="min-h-screen bg-gradient-to-br from-schwyz-blue via-[#001a3d] to-black flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
             
             <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none"></div>
             
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-              <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-caccia-blue rounded-full blur-[100px] opacity-60 mix-blend-screen animate-pulse-slow"></div>
-              <div className="absolute top-[40%] right-[-10%] w-[300px] h-[300px] bg-caccia-yellow rounded-full blur-[120px] opacity-10"></div>
+              <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-schwyz-blue rounded-full blur-[100px] opacity-60 mix-blend-screen animate-pulse-slow"></div>
+              <div className="absolute top-[40%] right-[-10%] w-[300px] h-[300px] bg-schwyz-yellow rounded-full blur-[120px] opacity-10"></div>
             </div>
 
             <div className="z-10 w-full max-w-lg animate-fade-in-up">
@@ -253,7 +253,7 @@
 
                 <header className={`flex flex-col items-center gap-2 text-center transition-all duration-500 ${currentView === 'menu' ? 'mb-8' : 'mb-6'}`}>
                   <Logo size={currentView === 'menu' ? 'lg' : 'md'} />
-                  <div className="h-px w-12 bg-caccia-yellow/50 mt-3 mb-1"></div>
+                  <div className="h-px w-12 bg-schwyz-yellow/50 mt-3 mb-1"></div>
                   <p className="text-gray-300 text-xs sm:text-sm tracking-[0.3em] uppercase font-medium opacity-80">
                     Soluciones Integrales
                   </p>
@@ -298,9 +298,9 @@
 
                     <div className="mt-6 pt-6 border-t border-white/10">
                       <ActionButton 
-                        label="Ir a Mercado Libre"
-                        subLabel="Ver nuestra tienda oficial"
-                        href="https://www.mercadolibre.com.ar/pagina/caccia?item_id=MLA1526376261&category_id=MLA407128&seller_id=492290794&client=recoview-selleritems&recos_listing=true#origin=upp&component=sellerData&typeSeller=eshop" 
+                        label="Ir a nuestra página web"
+                        subLabel="Visita nuestro sitio oficial"
+                        href="https://schwyz.com.ar/" 
                         icon={<Icons.ShoppingBag />}
                         variant="secondary"
                       />
@@ -314,7 +314,7 @@
                     <div className="flex items-center mb-6 relative">
                       <button 
                         onClick={() => setCurrentView('menu')} 
-                        className="absolute left-0 p-2 -ml-2 text-white/60 hover:text-caccia-yellow hover:bg-white/5 rounded-full transition-all flex items-center justify-center"
+                        className="absolute left-0 p-2 -ml-2 text-white/60 hover:text-schwyz-yellow hover:bg-white/5 rounded-full transition-all flex items-center justify-center"
                       >
                         <Icons.ArrowLeft />
                       </button>
@@ -353,9 +353,9 @@
                       />
 
                       <div className="pt-2">
-                         <div className="relative group p-1 bg-gradient-to-r from-caccia-yellow/20 via-white/5 to-caccia-yellow/20 rounded-2xl">
-                           <div className="bg-[#0a1e36] rounded-xl p-4 border border-caccia-yellow/20">
-                              <label className="text-xs font-semibold text-caccia-yellow mb-2 block uppercase tracking-wide flex items-center gap-2">
+                         <div className="relative group p-1 bg-gradient-to-r from-schwyz-yellow/20 via-white/5 to-schwyz-yellow/20 rounded-2xl">
+                           <div className="bg-[#0a1e36] rounded-xl p-4 border border-schwyz-yellow/20">
+                              <label className="text-xs font-semibold text-schwyz-yellow mb-2 block uppercase tracking-wide flex items-center gap-2">
                                 <span className="flex items-center"><Icons.QrCode /></span> Código de etiqueta
                               </label>
                               <input 
@@ -364,14 +364,14 @@
                                 required
                                 value={formData.codigo}
                                 onChange={handleInputChange}
-                                className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-mono tracking-wider placeholder-white/20 focus:outline-none focus:border-caccia-yellow focus:ring-1 focus:ring-caccia-yellow transition-all text-center"
+                                className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-mono tracking-wider placeholder-white/20 focus:outline-none focus:border-schwyz-yellow focus:ring-1 focus:ring-schwyz-yellow transition-all text-center"
                                 placeholder="202506-CA-XXXX"
                               />
-                              <div className="mt-3 flex gap-3 items-start bg-caccia-yellow/5 p-2 rounded border border-caccia-yellow/10">
+                              <div className="mt-3 flex gap-3 items-start bg-schwyz-yellow/5 p-2 rounded border border-schwyz-yellow/10">
                                 <span className="text-lg">📌</span>
                                 <p className="text-xs text-gray-400 leading-relaxed">
                                   Busca este código en la etiqueta pegada al instrumento.<br/>
-                                  <span className="text-caccia-yellow/80">Ejemplo: 202506-CA-11111</span>
+                                  <span className="text-schwyz-yellow/80">Ejemplo: 202506-CA-11111</span>
                                 </p>
                               </div>
                            </div>
@@ -381,7 +381,7 @@
                       <button 
                         type="submit" 
                         disabled={isLoading}
-                        className="w-full mt-4 bg-caccia-yellow text-caccia-blue font-bold py-4 rounded-xl hover:bg-[#ffdb4d] hover:shadow-[0_0_20px_rgba(255,199,0,0.3)] transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
+                        className="w-full mt-4 bg-schwyz-yellow text-schwyz-blue font-bold py-4 rounded-xl hover:bg-[#ffdb4d] hover:shadow-[0_0_20px_rgba(255,199,0,0.3)] transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
                       >
                         {isLoading ? (
                           <>
@@ -411,7 +411,7 @@
                     </p>
                     <button 
                       onClick={resetApp}
-                      className="px-8 py-3 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white hover:text-caccia-blue transition-all"
+                      className="px-8 py-3 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white hover:text-schwyz-blue transition-all"
                     >
                       Volver al inicio
                     </button>
@@ -423,7 +423,7 @@
               {currentView !== 'form' && (
                 <footer className="mt-8 text-center">
                    <p className="text-white/30 text-[10px] uppercase tracking-widest hover:text-white/50 transition-colors cursor-default">
-                    © {new Date().getFullYear()} Caccia Plus Importaciones
+                    © {new Date().getFullYear()} SCHWYZ Importaciones
                   </p>
                 </footer>
               )}
@@ -437,5 +437,6 @@
       root.render(<App />);
 
     </script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>

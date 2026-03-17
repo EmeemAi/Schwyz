@@ -112,8 +112,8 @@
       // Logo
       const Logo = ({ className = '', size = 'lg' }) => {
         const sizes = {
-          sm: 'h-16',
-          md: 'h-28',
+          sm: 'h-14',
+          md: 'h-24',
           lg: 'h-36',
         };
         return (
@@ -280,32 +280,7 @@
                       variant="primary"
                     />
                     
-                    <div className="mt-8 mb-2">
-                      <h3 className="text-white font-bold text-lg flex items-center gap-2 mb-1">
-                        <Icons.MessageSquareText className="text-green-400" />
-                        ¿Tenés alguna duda?
-                      </h3>
-                      <p className="text-white/60 text-sm mb-4">Comunicate con nosotros por WhatsApp:</p>
-                      
-                      <div className="space-y-3">
-                        <ActionButton 
-                          label="Instrumentos de Medición"
-                          subLabel="Consultar con un experto"
-                          href="https://wa.me/541149717053?text=Hola,%20tengo%20una%20consulta%20sobre%20instrumentos%20de%20medición" 
-                          icon={<Icons.WhatsApp />}
-                          variant="whatsapp"
-                        />
-                        <ActionButton 
-                          label="Otros Productos"
-                          subLabel="Juguetes, Bazar, Varios"
-                          href="https://wa.me/5491168927922?text=Hola,%20quisiera%20consultar%20por%20otros%20productos" 
-                          icon={<Icons.WhatsApp />}
-                          variant="whatsapp"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-6 pt-6 border-t border-white/10">
+                    <div className="mt-4 pt-6 border-t border-white/10">
                       <ActionButton 
                         label="Ir a nuestra página web"
                         subLabel="Visita nuestro sitio oficial"

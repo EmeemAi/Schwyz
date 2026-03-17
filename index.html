@@ -112,9 +112,9 @@
       // Logo
       const Logo = ({ className = '', size = 'lg' }) => {
         const sizes = {
-          sm: 'h-12',
-          md: 'h-20',
-          lg: 'h-56',
+          sm: 'h-16',
+          md: 'h-28',
+          lg: 'h-44',
         };
         return (
           <div className={`flex items-center justify-center select-none ${className}`}>
@@ -260,9 +260,9 @@
                 
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
-                <header className={`flex flex-col items-center gap-2 text-center transition-all duration-500 ${currentView === 'menu' ? 'mb-8' : 'mb-6'}`}>
+                <header className={`flex flex-col items-center gap-0 text-center transition-all duration-500 ${currentView === 'menu' ? 'mb-8' : 'mb-6'}`}>
                   <Logo size={currentView === 'menu' ? 'lg' : 'md'} />
-                  <div className="h-px w-12 bg-schwyz-yellow/50 mt-3 mb-1"></div>
+                  <div className="h-px w-12 bg-schwyz-yellow/50 mt-0 mb-1"></div>
                   <p className="text-gray-300 text-xs sm:text-sm tracking-[0.3em] uppercase font-medium opacity-80">
                     Soluciones Integrales
                   </p>

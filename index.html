@@ -21,6 +21,23 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- CSS ESTÁNDAR: Se aplica instantáneamente antes que cualquier script -->
+    <style>
+        /* Oculta scripts y estilos para que no se vean como texto */
+        script, style { display: none !important; }
+        /* Mantiene la pantalla en el color de fondo oficial mientras carga */
+        body { 
+            background-color: #002654 !important; 
+            margin: 0;
+            opacity: 0;
+        }
+        /* Clase que activa React al terminar de cargar */
+        body.loaded { 
+            opacity: 1; 
+            transition: opacity 0.4s ease-in; 
+        }
+    </style>
+
     <script>
         // Tailwind Configuration
         tailwind.config = {
@@ -58,17 +75,8 @@
 
     <style type="text/tailwindcss">
         @layer base {
-            /* Previene que se vea el código antes de cargar */
-            script, style {
-                display: none !important;
-            }
             body {
-                @apply font-sans bg-schwyz-blue text-white antialiased;
-                opacity: 0;
-            }
-            body.loaded {
-                opacity: 1;
-                transition: opacity 0.3s ease-in;
+                @apply font-sans text-white antialiased;
             }
         }
         @layer components {
@@ -356,16 +364,18 @@
                                                         name="tag_id_instrumento"
                                                         autoComplete="new-password"
                                                         required
+                                                        pattern="[a-zA-Z0-9]{6}-[a-zA-Z0-9]{2}-[a-zA-Z0-9]{4,6}"
+                                                        title="El formato debe ser XXXXXX-XX-XXXXX (Ej: 202603-CA-11111)"
                                                         value={formData.tag_id_instrumento}
                                                         onChange={handleInputChange}
-                                                        className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-mono tracking-wider placeholder-white/20 focus:outline-none focus:border-[#FFC700] focus:ring-1 focus:ring-[#FFC700] transition-all text-center"
-                                                        placeholder="202506-CA-XXXX"
+                                                        className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-mono tracking-wider placeholder-white/20 focus:outline-none focus:border-[#FFC700] focus:ring-1 focus:ring-[#FFC700] transition-all text-center invalid:border-red-500/50 invalid:text-red-200"
+                                                        placeholder="202603-CA-11111"
                                                     />
                                                     <div className="mt-3 flex gap-3 items-start bg-[#FFC700]/5 p-2 rounded border border-[#FFC700]/10">
                                                         <span className="text-lg">📌</span>
                                                         <p className="text-xs text-gray-400 leading-relaxed">
                                                             Busca este código en la etiqueta pegada al instrumento.<br/>
-                                                            <span className="text-[#FFC700]/80">Ejemplo: 202506-CA-11111</span>
+                                                            <span className="text-[#FFC700]/80">Formato: 202603-CA-11111</span>
                                                         </p>
                                                     </div>
                                                 </div>

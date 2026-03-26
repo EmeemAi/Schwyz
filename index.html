@@ -223,19 +223,16 @@
                 e.preventDefault();
                 setIsLoading(true);
 
-                // Usamos URLSearchParams: es el método más fiable para Google Apps Script
-                const params = new URLSearchParams();
-                params.append('empresa', formData.empresa);
-                params.append('contacto', formData.contacto);
-                params.append('email', formData.email);
-                params.append('codigo', formData.codigo);
-
                 try {
+                    // Enviamos como JSON puro, que es lo que tu script parece procesar mejor
                     await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'no-cors', // Google Script requiere no-cors
-                        body: params
+                        mode: 'no-cors', 
+                        body: JSON.stringify(formData)
                     });
+                    
+                    // En modo no-cors no podemos ver la respuesta, pero si no hay error,
+                    // asumimos que se envió correctamente.
                     setCurrentView('success');
                 } catch (error) {
                     console.error("Error de envío:", error);

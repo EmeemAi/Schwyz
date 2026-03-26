@@ -207,11 +207,10 @@
                 empresa: '',
                 contacto: '',
                 email: '',
-                tag_id_instrumento: ''
+                codigo: '' // Volvemos al nombre simple para asegurar compatibilidad
             });
 
             useEffect(() => {
-                // Una vez que React se monta, mostramos el cuerpo
                 document.body.classList.add('loaded');
             }, []);
 
@@ -224,22 +223,18 @@
                 e.preventDefault();
                 setIsLoading(true);
 
-                // Mapeamos el nombre interno al nombre que espera el Script de Google
-                const payload = {
-                    empresa: formData.empresa,
-                    contacto: formData.contacto,
-                    email: formData.email,
-                    codigo: formData.tag_id_instrumento
-                };
+                // Usamos URLSearchParams: es el método más fiable para Google Apps Script
+                const params = new URLSearchParams();
+                params.append('empresa', formData.empresa);
+                params.append('contacto', formData.contacto);
+                params.append('email', formData.email);
+                params.append('codigo', formData.codigo);
 
                 try {
                     await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(payload)
+                        mode: 'no-cors', // Google Script requiere no-cors
+                        body: params
                     });
                     setCurrentView('success');
                 } catch (error) {
@@ -251,7 +246,7 @@
             };
 
             const resetApp = () => {
-                setFormData({ empresa: '', contacto: '', email: '', tag_id_instrumento: '' });
+                setFormData({ empresa: '', contacto: '', email: '', codigo: '' });
                 setCurrentView('menu');
             };
 
@@ -369,12 +364,12 @@
                                                     <input 
                                                         id="input-tag-id"
                                                         type="text" 
-                                                        name="tag_id_instrumento"
+                                                        name="codigo"
                                                         autoComplete="new-password"
                                                         required
                                                         pattern="[a-zA-Z0-9]{6}-[a-zA-Z0-9]{2}-[a-zA-Z0-9]{4,6}"
                                                         title="El formato debe ser XXXXXX-XX-XXXXX (Ej: 202603-CA-11111)"
-                                                        value={formData.tag_id_instrumento}
+                                                        value={formData.codigo}
                                                         onChange={handleInputChange}
                                                         className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-mono tracking-wider placeholder-white/20 focus:outline-none focus:border-[#FFC700] focus:ring-1 focus:ring-[#FFC700] transition-all text-center invalid:border-red-500/50 invalid:text-red-200"
                                                         placeholder="202603-CA-11111"

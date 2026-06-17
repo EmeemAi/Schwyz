@@ -39,6 +39,42 @@
     </style>
 
     <script>
+        // Sistema de autodiagnóstico ante pantallas azules o congeladas
+        window.addEventListener('error', function(e) {
+            document.body.style.opacity = "1";
+            document.body.classList.add('loaded');
+            var errDiv = document.getElementById('error-debugger');
+            if (errDiv) {
+                errDiv.style.display = 'block';
+                errDiv.innerHTML = '<div style="font-weight: bold; margin-bottom: 0.5rem;">⚠️ Error de Carga / Ejecución:</div>' + 
+                                  '<div style="background: rgba(0,0,0,0.1); padding: 0.5rem; border-radius: 0.25rem; font-size: 12px; margin-bottom: 0.5rem;">' + e.message + '</div>' +
+                                  '<div style="font-size: 11px; opacity: 0.8;">Archivo: ' + (e.filename || 'Desconocido') + ' (Línea ' + (e.lineno || '?') + ')</div>' +
+                                  '<div style="margin-top: 0.75rem; font-size: 11px; font-style: italic;">Sugerencia de solución: Intente recargar la página limpiando el caché (Ctrl + F5 o Cmd + Shift + R).</div>';
+            }
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            document.body.style.opacity = "1";
+            document.body.classList.add('loaded');
+            var errDiv = document.getElementById('error-debugger');
+            if (errDiv) {
+                errDiv.style.display = 'block';
+                errDiv.innerHTML = '<div style="font-weight: bold; margin-bottom: 0.5rem;">⚠️ Promesa Fallida:</div>' + 
+                                  '<div style="background: rgba(0,0,0,0.1); padding: 0.5rem; border-radius: 0.25rem; font-size: 12px;">' + e.reason + '</div>';
+            }
+        });
+
+        // Temporizador de seguridad: Si en 3.5 segundos React no arranca, hacemos visible el fondo
+        setTimeout(function() {
+            if (!document.body.classList.contains('loaded')) {
+                console.warn("React tardó demasiado en iniciar. Forzando visualización de página.");
+                document.body.style.opacity = "1";
+                document.body.classList.add('loaded');
+            }
+        }, 3500);
+    </script>
+
+    <script>
         // Tailwind Configuration
         tailwind.config = {
             theme: {
@@ -89,6 +125,9 @@
     </style>
 </head>
 <body>
+    <!-- Depurador de errores visible solo si algo falla en la carga o ejecución de React/CDNs -->
+    <div id="error-debugger" style="display:none; background: #fee2e2; color: #991b1b; padding: 1.25rem; margin: 1.5rem auto; border-radius: 0.75rem; font-family: monospace; z-index: 99999; position: relative; font-size: 13px; border: 1px solid #f87171; max-width: 500px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);"></div>
+
     <div id="root"></div>
 
     <script type="text/babel">

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCHWYZ | Cotizador Rápido de Calibraciones</title>
+    
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transpilation in browser -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.4/babel.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        script, style { display: none !important; }
+        body { 
+            background-color: #002654 !important; 
+            margin: 0;
+            opacity: 0;
+        }
+        body.loaded { 
+            opacity: 1; 
+            transition: opacity 0.25s ease-in; 
+        }
+        /* Mobile tap highlight reset */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        schwyz: {
+                            blue: '#002654',
+                            dark: '#001a3d',
+                            yellow: '#FFC700',
+                            accent: '#ffdb4d'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-[#002654] via-[#001a3d] to-black min-h-screen text-white font-sans antialiased pb-32">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        const RAW_INSTRUMENTS = [{"code": "LAB- 01", "name": "alesametro (incluye precio reloj)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 02", "name": "Analizador de redes ( Lazo, telurimetro, megohometro, continuidad, disyuntores, voltaje", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 03", "name": "Balanza hasta 50KG minima division 0.1grs", "trazabilidad": "INTI-SAC", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 04", "name": "Calibre 0-300 mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 05", "name": "Calibre 301-500 mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 06", "name": "Calibre 600mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 07", "name": "Calibre 1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 08", "name": "Calibre profundidad hasta 200mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 09", "name": "Calibre profundidad 201 hasta 300mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 10", "name": "Calibre de Interiores", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 11", "name": "Calibre de soldadura (sold-8, catetometro, sold-9, sold-13)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 12", "name": "Calibrador de procesos (se mide entrada y salida volt, corriente, resistencia, frecuencia, termocupla.", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 13", "name": "Capacimetro (se realiza de 10 nanos a 1 micro) en 5 puntos", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 14", "name": "Cinta Métrica hasta 5mts", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 15", "name": "Cinta Métrica hasta 20mts", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 17", "name": "Cinta PI 20-500mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 18", "name": "Cinta PI 500-1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 19", "name": "Cinta PI 1000-1100mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 20", "name": "Controlador de temperatura", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 21", "name": "Cronometro", "trazabilidad": "ILAC", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 22", "name": "Cuentametros / Odometros", "trazabilidad": "OAA", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 23", "name": "Decibelimetro", "trazabilidad": "CINTRA", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 24", "name": "Dinamometro hasta 50kg/500N (traccion o compresion)", "trazabilidad": "INTI-SAC", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 25", "name": "Durometro Shore A y D", "trazabilidad": "INTI-SAC", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 26", "name": "Espesimetro 0-10 x 0.01mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 27", "name": "Espesimetro 0-1 x 0.001mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 28", "name": "Escuadra (medicion en angulo)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 29", "name": "Fleximetro", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 30", "name": "Goniometro", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 31", "name": "Grindometros", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 32", "name": "Inclinometro", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 33", "name": "Interimetro (pinza de interior)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 34", "name": "Luxometro", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 35", "name": "Manometro clase 1%/manovacuometro/vacuometro misma clase -1 hasta 650 bar", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 36", "name": "Manometro clase 0.5% / vacuometro misma clase hasta -1 hasta 650 bar", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 37", "name": "Manometro clase 0.25% / 0.1% /vacuometro misma clase  -1 hasta 650 bar", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 38", "name": "Manometro digitales hasta 0.1%", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 39", "name": "Manómetro diferencial", "trazabilidad": "OAA", "category": "Otros Instrumentos"}, {"code": "LAB- 40", "name": "Medidor de Altura (calibre) hasta 300mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 41", "name": "Medidor de Altura (calibre) hasta 600mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 42", "name": "Medidor de Altura (calibre) hasta 1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 43", "name": "Medidor de distancia hasta 10 metros.", "trazabilidad": "INTI-SAC", "category": "Otros Instrumentos"}, {"code": "LAB- 44", "name": "Medidor de diametro Interno-Pinza interior", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 45", "name": "Medidor de impedancia de Lazo", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 46", "name": "Medidor de pintura x modo / ultrasonido", "trazabilidad": "OAA", "category": "Otros Instrumentos"}, {"code": "LAB- 47", "name": "Medidor de puesta a tierra (TELURIMETRO)", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 48", "name": "Meghometro en resistencia hasta 200mgohm", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 49", "name": "Micrometro 0‐25 Y 25-50", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 50", "name": "Micrometro 50-75 Y 75-100", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 51", "name": "Micrometro 100-125 Y 125-150", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 52", "name": "Micrometro 150‐175 Y 175-200", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 53", "name": "Micrometro 200-225 Y 225-300", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 54", "name": "Micrometro 300-400", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 55", "name": "Micrometro 400-600", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 56", "name": "Micrometro interior 0-50mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 57", "name": "Micrometro interior 50-100mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 58", "name": "Micrometro interior 100-200mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 59", "name": "Micrometro interior 200-300mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 61", "name": "Micrometro (ASTAS-PROLONGADORES) 0-100", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 62", "name": "Micrometro (ASTAS-PROLONGADORES) 0-150", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 63", "name": "Micrometro (ASTAS-PROLONGADORES) 100-200", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 64", "name": "Micrometro (ASTAS-PROLONGADORES) 150-300", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 65", "name": "Micrometro De Profundidad 0-50", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 66", "name": "Micrometro de Profundidad 0-150", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 67", "name": "Micrometro de profundidad 0-300", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 68", "name": "Multimetro (se realiza en Corriente/Tension/Resistencia) por mas parametros consultar", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 69", "name": "Pinza Amperometrica (se realiza CC/CA)", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 70", "name": "Pinza Amperometrica (se realiza CC/CA/tension/resistencia)", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 71", "name": "Pirometro Laser hasta 500C", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 72", "name": "Plantilla de pvc x unidad hasta 2mm", "trazabilidad": "OAA", "category": "Otros Instrumentos"}, {"code": "LAB- 73", "name": "Presostato", "trazabilidad": "INTI-SAC", "category": "Presión y Vacío"}, {"code": "LAB- 74", "name": "Probador de bateria", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 75", "name": "Probador de disyuntores", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 76", "name": "Regla hasta 300mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 77", "name": "Regla 300 a 500mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 78", "name": "Regla 500 a 1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 79", "name": "Reloj palpador", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 80", "name": "Reloj Comparador 0-10mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 81", "name": "Reloj comparador 0-30mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 82", "name": "Reloj comparador 0-50mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 83", "name": "Reloj comparador 0-100mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 84", "name": "Reloj comparador 0.001mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 85", "name": "Rugosimetro", "trazabilidad": "INTI-SAC", "category": "Dimensional y Mecánica"}, {"code": "LAB- 86", "name": "Sondas de espesor x unidad hasta largo 100mm", "trazabilidad": "INTI-SAC", "category": "Dimensional y Mecánica"}, {"code": "LAB- 87", "name": "sondas de espesor x unidad hasta largo 300mm", "trazabilidad": "INTI-SAC", "category": "Dimensional y Mecánica"}, {"code": "LAB- 88", "name": "Tacometro x modo", "trazabilidad": "INTI-SAC", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 89", "name": "Tacometro Estroboscopico", "trazabilidad": "INTI-SAC", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 90", "name": "Tensiometro digital (para personas)", "trazabilidad": "INTI-SAC", "category": "Otros Instrumentos"}, {"code": "LAB- 91", "name": "Termohigrometro", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 92", "name": "Termometro ambiente", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 93", "name": "Termometro c/ sensor - vidrio  (-20C a 400C) en 3 puntos", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 94", "name": "Adicional por punto extra", "trazabilidad": "INTI-SAC", "category": "Otros Instrumentos"}, {"code": "LAB- 95", "name": "Termostato", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 96", "name": "Torquimetro hasta 300NM o equivalente (incluye ajuste)", "trazabilidad": "OAA", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 97", "name": "Torquimetro 301 hasta 1000NM o equivalente (incluye ajuste)", "trazabilidad": "OAA", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 98", "name": "Anemómetro (Velocidad de viento)", "trazabilidad": "Consultar", "category": "Otros Instrumentos"}, {"code": "LAB-99", "name": "Anemometro (temperatura y velocidad de viento)", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-100", "name": "Conductimetro", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-101", "name": "Medidor de cloro libre", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-102", "name": "Medidor de humedad de madera", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-103", "name": "Medidor de humedad de papel", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-104", "name": "Medidor de humedad de oxigeno disuelto en agua", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-105", "name": "Medidor de ORP", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-106", "name": "Medidor de peachimetro con electrodo separador", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-107", "name": "Medidor de peachimetro con electrodo integrado", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-108", "name": "Refractometro optico", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-109", "name": "Turbidimetro", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-110", "name": "MEDIDOR MONOGAS", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-111", "name": "MEDIDOR DE 4 GASES", "trazabilidad": "", "category": "Química y Gases"}];
+
+        // Equipos más habituales en industria y talleres (Atajo rápido en 1 clic)
+        const QUICK_INSTRUMENTS = [
+            { code: 'LAB- 04', name: 'Calibre / Pie de rey', icon: 'ruler', cat: 'Dimensional' },
+            { code: 'LAB- 35', name: 'Manómetro / Vacuómetro', icon: 'gauge', cat: 'Presión' },
+            { code: 'LAB- 91', name: 'Termohigrómetro', icon: 'thermometer', cat: 'Temperatura' },
+            { code: 'LAB- 49', name: 'Micrómetro exterior', icon: 'crosshair', cat: 'Dimensional' },
+            { code: 'LAB- 80', name: 'Reloj Comparador', icon: 'clock', cat: 'Dimensional' },
+            { code: 'LAB- 96', name: 'Torquímetro', icon: 'wrench', cat: 'Fuerza' },
+            { code: 'LAB- 68', name: 'Multímetro / Tester', icon: 'zap', cat: 'Electricidad' },
+            { code: 'LAB- 70', name: 'Pinza Amperométrica', icon: 'activity', cat: 'Electricidad' },
+            { code: 'LAB- 03', name: 'Balanza industrial / lab', icon: 'scale', cat: 'Masa' },
+            { code: 'LAB- 23', name: 'Decibelímetro', icon: 'volume-2', cat: 'Acústica' },
+            { code: 'LAB- 47', name: 'Telurímetro (Puesta a tierra)', icon: 'shield-alert', cat: 'Electricidad' },
+            { code: 'LAB- 46', name: 'Medidor de Pintura / Espesor', icon: 'layers', cat: 'Dimensional' }
+        ];
+
+        const Icon = ({ name, className = "", size = 20 }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (iconRef.current && window.lucide) {
+                    lucide.createIcons({
+                        attrs: {
+                            class: className,
+                            'stroke-width': 2,
+                            width: size,
+                            height: size
+                        },
+                        name: name,
+                        element: iconRef.current
+                    });
+                }
+            }, [name, className, size]);
+            return <i ref={iconRef} data-lucide={name} className={className}></i>;
+        };
+
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbws8CL_jvaeCFA5s25wAVvP6Go2X_342yyXRjUrxRcqCFQFnus33UeqVNmI3JcGjeY/exec";
+
+        function PresupuestoApp() {
+            // Datos cliente traídos de la página anterior
+            const [clientData, setClientData] = useState({
+                empresa: '',
+                contacto: '',
+                email: '',
+                telefono: ''
+            });
+
+            const [viewMode, setViewMode] = useState('quick'); // 'quick' | 'search' | 'text'
+            const [selectedItems, setSelectedItems] = useState({}); // { codeOrName: { name, qty, code } }
+            const [searchTerm, setSearchTerm] = useState('');
+            const [freeTextList, setFreeTextList] = useState('');
+            const [observaciones, setObservaciones] = useState('');
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitted, setSubmitted] = useState(false);
+
+            useEffect(() => {
+                document.body.classList.add('loaded');
+
+                const params = new URLSearchParams(window.location.search);
+                const empresa = params.get('empresa') || '';
+                const contacto = params.get('contacto') || '';
+                const email = params.get('email') || '';
+
+                setClientData(prev => ({
+                    ...prev,
+                    empresa: empresa || prev.empresa,
+                    contacto: contacto || prev.contacto,
+                    email: email || prev.email
+                }));
+            }, []);
+
+            // Sumar o restar cantidades
+            const updateItemQty = (code, name, delta) => {
+                setSelectedItems(prev => {
+                    const current = prev[code]?.qty || 0;
+                    const next = Math.max(0, current + delta);
+                    const updated = { ...prev };
+                    if (next === 0) {
+                        delete updated[code];
+                    } else {
+                        updated[code] = { code, name, qty: next };
+                    }
+                    return updated;
+                });
+            };
+
+            // Total de equipos seleccionados
+            const totalEquipos = useMemo(() => {
+                return Object.values(selectedItems).reduce((sum, item) => sum + item.qty, 0);
+            }, [selectedItems]);
+
+            // Filtrar instrumentos del catálogo completo
+            const catalogResults = useMemo(() => {
+                if (!searchTerm.trim()) return [];
+                const clean = searchTerm.toLowerCase().trim();
+                return RAW_INSTRUMENTS.filter(i => 
+                    i.name.toLowerCase().includes(clean) || 
+                    i.code.toLowerCase().includes(clean) ||
+                    i.category.toLowerCase().includes(clean)
+                ).slice(0, 15);
+            }, [searchTerm]);
+
+            const handleSubmitQuote = async (e) => {
+                e.preventDefault();
+                
+                if (totalEquipos === 0 && !freeTextList.trim()) {
+                    alert('Por favor agrega al menos un equipo o escribe tu lista.');
+                    return;
+                }
+
+                setIsSubmitting(true);
+
+                const payload = {
+                    tipo_evento: 'SOLICITUD_PRESUPUESTO_CALIBRACION',
+                    timestamp: new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),
+                    empresa: clientData.empresa || '',
+                    contacto: clientData.contacto || '',
+                    email: clientData.email || '',
+                    telefono: clientData.telefono || '',
+                    carrito: Object.values(selectedItems),
+                    total_equipos: totalEquipos,
+                    lista_escrita_libre: freeTextList || '',
+                    descuento_aplicado: '10% OFF',
+                    observaciones: observaciones || ''
+                };
+
+                console.log('%c [SCHWYZ] Presupuesto enviado: ', 'background: #002654; color: #FFC700; font-weight: bold;', payload);
+
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify(payload)
+                    });
+                } catch (err) {
+                    console.error('Error al enviar presupuesto:', err);
+                } finally {
+                    setIsSubmitting(false);
+                    setSubmitted(true);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            const whatsappMessage = encodeURIComponent(
+                `Hola SCHWYZ, soy ${clientData.contacto || 'un cliente'} de ${clientData.empresa || 'mi empresa'}. Acabo de solicitar cotización con el 10% OFF para ${totalEquipos > 0 ? totalEquipos + ' equipo(s)' : 'mis equipos'}. Mi email es ${clientData.email}.`
+            );
+
+            return (
+                <div className="max-w-xl mx-auto px-4 py-5 sm:py-6">
+                    
+                    {/* Header Minimalista */}
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                        <a href="index.html" className="flex items-center gap-2 text-xs font-semibold text-gray-300 hover:text-white no-underline">
+                            <Icon name="arrow-left" size={16} />
+                            <span>Volver</span>
+                        </a>
+                        <div className="bg-white px-3.5 py-1.5 rounded-xl shadow-md border border-white/20 inline-flex items-center justify-center">
+                            <img src="logo.png" alt="SCHWYZ" className="h-6 sm:h-7 w-auto object-contain" onError={(e)=>{e.target.style.display='none'}} />
+                        </div>
+                        <span className="bg-[#FFC700] text-[#002654] text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                            10% OFF
+                        </span>
+                    </div>
+
+                    {!submitted ? (
+                        <>
+                            {/* Título & Beneficio Directo */}
+                            <div className="mb-5">
+                                <h1 className="text-lg sm:text-xl font-bold text-white leading-tight mb-1">
+                                    Armá tu cotización en 3 clics
+                                </h1>
+                                <p className="text-xs text-gray-300 leading-relaxed">
+                                    Tocá los instrumentos que tenés en tu empresa para sumarlos al carrito con <strong>10% OFF</strong>.
+                                </p>
+                            </div>
+
+                            {/* Pestañas de Modo: Selección Rápida | Buscar en Catálogo | Escribir a mano */}
+                            <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl mb-4 border border-white/10 text-xs">
+                                <button
+                                    onClick={() => setViewMode('quick')}
+                                    className={`py-2 px-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'quick' 
+                                            ? 'bg-[#FFC700] text-[#002654] shadow' 
+                                            : 'text-gray-300 hover:text-white'
+                                    }`}
+                                >
+                                    <Icon name="zap" size={14} />
+                                    <span>Rápido</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('search')}
+                                    className={`py-2 px-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'search' 
+                                            ? 'bg-[#FFC700] text-[#002654] shadow' 
+                                            : 'text-gray-300 hover:text-white'
+                                    }`}
+                                >
+                                    <Icon name="search" size={14} />
+                                    <span>Buscar</span>
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('text')}
+                                    className={`py-2 px-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
+                                        viewMode === 'text' 
+                                            ? 'bg-[#FFC700] text-[#002654] shadow' 
+                                            : 'text-gray-300 hover:text-white'
+                                    }`}
+                                >
+                                    <Icon name="pen-tool" size={14} />
+                                    <span>Escribir</span>
+                                </button>
+                            </div>
+
+                            {/* MODO 1: SELECCIÓN RÁPIDA (TOUCH Y LISTO) */}
+                            {viewMode === 'quick' && (
+                                <div className="space-y-4 animate-fadeIn">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                        {QUICK_INSTRUMENTS.map(item => {
+                                            const qty = selectedItems[item.code]?.qty || 0;
+                                            const isSelected = qty > 0;
+
+                                            return (
+                                                <div 
+                                                    key={item.code}
+                                                    onClick={() => !isSelected && updateItemQty(item.code, item.name, 1)}
+                                                    className={`p-3 rounded-2xl border transition-all duration-200 select-none flex flex-col justify-between relative cursor-pointer min-h-[95px] ${
+                                                        isSelected 
+                                                            ? 'bg-gradient-to-b from-[#002654] to-[#0a1e36] border-[#FFC700] shadow-md shadow-[#FFC700]/20' 
+                                                            : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-[#FFC700] text-[#002654]' : 'bg-white/10 text-gray-300'}`}>
+                                                            <Icon name={item.icon} size={16} />
+                                                        </div>
+                                                        {isSelected && (
+                                                            <span className="text-[10px] font-black bg-[#FFC700] text-[#002654] px-1.5 py-0.2 rounded-full">
+                                                                {qty}
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="text-xs font-bold text-white leading-tight mb-2">
+                                                        {item.name}
+                                                    </div>
+
+                                                    {/* Controles de cantidad cuando está seleccionado */}
+                                                    {isSelected ? (
+                                                        <div className="flex items-center justify-between bg-black/40 rounded-xl p-0.5 border border-[#FFC700]/40" onClick={e => e.stopPropagation()}>
+                                                            <button 
+                                                                onClick={() => updateItemQty(item.code, item.name, -1)}
+                                                                className="w-7 h-7 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
+                                                            >
+                                                                <Icon name="minus" size={13} />
+                                                            </button>
+                                                            <span className="text-xs font-bold text-white px-1">
+                                                                {qty}
+                                                            </span>
+                                                            <button 
+                                                                onClick={() => updateItemQty(item.code, item.name, 1)}
+                                                                className="w-7 h-7 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
+                                                            >
+                                                                <Icon name="plus" size={13} />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-[11px] font-semibold text-[#FFC700]/70 flex items-center gap-1">
+                                                            <span>+ Tocar para sumar</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <p className="text-[11px] text-gray-400 text-center pt-1">
+                                        ¿Buscás otro equipo? Usá la pestaña <strong>Buscar</strong> o <strong>Escribir</strong> arriba.
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* MODO 2: BUSCADOR EN EL CATÁLOGO COMPLETO (109 EQUIPOS) */}
+                            {viewMode === 'search' && (
+                                <div className="space-y-3 animate-fadeIn">
+                                    <div className="relative">
+                                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                                            <Icon name="search" size={16} />
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            autoFocus
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
+                                            placeholder="Escribe el equipo (ej: calibre, manómetro, tacómetro, luxómetro)..."
+                                            className="w-full bg-black/40 border border-white/20 rounded-xl pl-9 pr-9 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FFC700]"
+                                        />
+                                        {searchTerm && (
+                                            <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1">
+                                                <Icon name="x" size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {searchTerm.trim() ? (
+                                        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                                            {catalogResults.map(item => {
+                                                const qty = selectedItems[item.code]?.qty || 0;
+                                                const isSelected = qty > 0;
+
+                                                return (
+                                                    <div key={item.code} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs">
+                                                        <div className="flex-1 pr-2">
+                                                            <div className="font-semibold text-white leading-tight">{item.name}</div>
+                                                            <div className="text-[10px] text-gray-400">{item.code} • {item.category}</div>
+                                                        </div>
+
+                                                        {isSelected ? (
+                                                            <div className="flex items-center bg-[#002654] border border-[#FFC700] rounded-lg">
+                                                                <button onClick={() => updateItemQty(item.code, item.name, -1)} className="px-2 py-1 text-[#FFC700]">-</button>
+                                                                <span className="px-2 font-bold text-white">{qty}</span>
+                                                                <button onClick={() => updateItemQty(item.code, item.name, 1)} className="px-2 py-1 text-[#FFC700]">+</button>
+                                                            </div>
+                                                        ) : (
+                                                            <button 
+                                                                onClick={() => updateItemQty(item.code, item.name, 1)}
+                                                                className="px-3 py-1.5 bg-[#FFC700] text-[#002654] rounded-lg font-bold text-[11px]"
+                                                            >
+                                                                + Agregar
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {catalogResults.length === 0 && (
+                                                <div className="text-center py-6 text-xs text-gray-400">
+                                                    No encontramos ese equipo exacto. Podés usar la pestaña <strong>Escribir</strong> para ponerlo libremente.
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-gray-400 text-center py-4">
+                                            Escribe una palabra clave para buscar entre los 109 instrumentos que calibramos.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* MODO 3: ESCRIBIR LA LISTA A MANO (CERO FRICCIÓN) */}
+                            {viewMode === 'text' && (
+                                <div className="space-y-3 animate-fadeIn">
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                                        <label className="block text-xs font-bold text-gray-300 mb-1.5">
+                                            Escribí tus equipos como te sea más cómodo:
+                                        </label>
+                                        <textarea 
+                                            rows={4}
+                                            value={freeTextList}
+                                            onChange={e => setFreeTextList(e.target.value)}
+                                            placeholder="Ej: Tengo 3 calibres de 200mm, 2 manómetros de 10 bar y 1 termohigrómetro digital..."
+                                            className="w-full bg-black/40 border border-white/15 rounded-xl p-3 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
+                                        ></textarea>
+                                        <p className="text-[11px] text-gray-400 mt-2">
+                                            📌 No te preocupes por códigos ni marcas exactas. Nuestro laboratorio lo revisa y te arma el presupuesto.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* RESUMEN DEL CARRITO (Si hay algo seleccionado) */}
+                            {totalEquipos > 0 && (
+                                <div className="mt-5 p-3.5 rounded-2xl bg-black/30 border border-[#FFC700]/30 animate-fadeIn">
+                                    <div className="flex items-center justify-between text-xs font-bold text-[#FFC700] mb-2">
+                                        <span className="flex items-center gap-1.5">
+                                            <Icon name="shopping-bag" size={15} />
+                                            Tu Selección ({totalEquipos} {totalEquipos === 1 ? 'equipo' : 'equipos'}):
+                                        </span>
+                                        <span className="text-[10px] bg-[#FFC700]/20 text-[#FFC700] px-2 py-0.5 rounded">
+                                            10% OFF Incluido
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {Object.values(selectedItems).map(item => (
+                                            <span key={item.code} className="inline-flex items-center gap-1.5 bg-white/10 border border-white/10 text-white text-xs px-2.5 py-1 rounded-lg">
+                                                <strong>{item.qty}x</strong> {item.name}
+                                                <button onClick={() => updateItemQty(item.code, item.name, -item.qty)} className="text-gray-400 hover:text-red-400 ml-1">
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* DESTINO DEL PRESUPUESTO (Automático) */}
+                            <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs text-gray-300">
+                                <div className="truncate pr-2">
+                                    <span className="text-gray-400">Enviar presupuesto a:</span>{" "}
+                                    <strong className="text-[#FFC700]">{clientData.email || "tu correo"}</strong>
+                                    {clientData.empresa && <span className="text-gray-400"> ({clientData.empresa})</span>}
+                                </div>
+                            </div>
+
+                            {/* BARRA FIJA INFERIOR (CTA DE ENVÍO DIRECTO) */}
+                            <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-[#001a3d]/95 backdrop-blur-lg border-t border-white/10 z-50 shadow-2xl">
+                                <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
+                                    <div>
+                                        <div className="text-xs font-extrabold text-white flex items-center gap-1.5">
+                                            <span>{totalEquipos > 0 ? `${totalEquipos} equipo(s)` : (freeTextList.trim() ? 'Lista libre' : '0 seleccionados')}</span>
+                                            <span className="bg-[#FFC700] text-[#002654] text-[10px] font-black px-1.5 py-0.2 rounded">10% OFF</span>
+                                        </div>
+                                        <div className="text-[10px] text-gray-400">Sin compromiso</div>
+                                    </div>
+
+                                    <button 
+                                        onClick={handleSubmitQuote}
+                                        disabled={isSubmitting || (totalEquipos === 0 && !freeTextList.trim())}
+                                        className="flex-1 bg-[#FFC700] hover:bg-[#ffdb4d] text-[#002654] font-black py-3.5 px-5 rounded-xl transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#FFC700]/25 text-sm"
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <Icon name="loader-2" className="animate-spin w-4 h-4" />
+                                                <span>Enviando pedido...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Icon name="send" size={16} />
+                                                <span>Pedir Presupuesto con 10% OFF</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        /* PANTALLA DE ÉXITO ULTRA LIMPIA */
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center backdrop-blur-xl animate-fadeIn shadow-2xl mt-4">
+                            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_25px_rgba(34,197,94,0.4)]">
+                                <Icon name="check-circle" size={32} className="text-white" />
+                            </div>
+
+                            <h2 className="text-xl sm:text-2xl font-black text-white mb-1.5">
+                                ¡Pedido de Presupuesto Enviado!
+                            </h2>
+                            <p className="text-xs text-gray-300 max-w-sm mx-auto mb-5 leading-relaxed">
+                                Recibimos tu solicitud con el <strong>10% OFF</strong>. Nuestro laboratorio técnico te enviará la propuesta detallada a:
+                                <span className="block mt-1 font-bold text-[#FFC700] text-sm">{clientData.email}</span>
+                            </p>
+
+                            <div className="flex flex-col gap-2.5 max-w-xs mx-auto">
+                                <a 
+                                    href={`https://wa.me/5491100000000?text=${whatsappMessage}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-green-500/20 transition-all text-xs no-underline"
+                                >
+                                    <Icon name="message-circle" size={16} />
+                                    <span>Avisar por WhatsApp</span>
+                                </a>
+
+                                <a 
+                                    href="index.html"
+                                    className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center transition-all text-xs no-underline"
+                                >
+                                    Volver al Inicio
+                                </a>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PresupuestoApp />);
+    </script>
+</body>
+</html>

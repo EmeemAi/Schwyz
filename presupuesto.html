@@ -209,10 +209,6 @@
                 }
             };
 
-            const whatsappMessage = encodeURIComponent(
-                `Hola SCHWYZ, soy ${clientData.contacto || 'un cliente'} de ${clientData.empresa || 'mi empresa'}. Acabo de solicitar cotización con el 10% OFF para ${totalEquipos > 0 ? totalEquipos + ' equipo(s)' : 'mis equipos'}. Mi email es ${clientData.email}.`
-            );
-
             return (
                 <div className="max-w-xl mx-auto px-4 py-5 sm:py-6">
                     
@@ -460,14 +456,6 @@
                                 </div>
                             )}
 
-                            {/* DESTINO DEL PRESUPUESTO (Automático) */}
-                            <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs text-gray-300">
-                                <div className="truncate pr-2">
-                                    <span className="text-gray-400">Enviar presupuesto a:</span>{" "}
-                                    <strong className="text-[#FFC700]">{clientData.email || "tu correo"}</strong>
-                                    {clientData.empresa && <span className="text-gray-400"> ({clientData.empresa})</span>}
-                                </div>
-                            </div>
 
                             {/* BARRA FIJA INFERIOR (CTA DE ENVÍO DIRECTO) */}
                             <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-[#001a3d]/95 backdrop-blur-lg border-t border-white/10 z-50 shadow-2xl">
@@ -510,25 +498,14 @@
                             <h2 className="text-xl sm:text-2xl font-black text-white mb-1.5">
                                 ¡Pedido de Presupuesto Enviado!
                             </h2>
-                            <p className="text-xs text-gray-300 max-w-sm mx-auto mb-5 leading-relaxed">
-                                Recibimos tu solicitud con el <strong>10% OFF</strong>. Nuestro laboratorio técnico te enviará la propuesta detallada a:
-                                <span className="block mt-1 font-bold text-[#FFC700] text-sm">{clientData.email}</span>
+                            <p className="text-xs text-gray-300 max-w-sm mx-auto mb-6 leading-relaxed">
+                                Recibimos tu solicitud con el <strong>10% OFF</strong>. Nuestro laboratorio técnico preparará la cotización y te la enviará a la brevedad.
                             </p>
 
                             <div className="flex flex-col gap-2.5 max-w-xs mx-auto">
                                 <a 
-                                    href={`https://wa.me/5491100000000?text=${whatsappMessage}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-green-500/20 transition-all text-xs no-underline"
-                                >
-                                    <Icon name="message-circle" size={16} />
-                                    <span>Avisar por WhatsApp</span>
-                                </a>
-
-                                <a 
                                     href="index.html"
-                                    className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center transition-all text-xs no-underline"
+                                    className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center transition-all text-xs no-underline"
                                 >
                                     Volver al Inicio
                                 </a>

@@ -44,6 +44,13 @@
             background: rgba(255, 199, 0, 0.3);
             border-radius: 4px;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.2s ease-out forwards;
+        }
     </style>
 
     <script>
@@ -92,16 +99,18 @@
             const iconRef = useRef(null);
             useEffect(() => {
                 if (iconRef.current && window.lucide) {
-                    lucide.createIcons({
-                        attrs: {
-                            class: className,
-                            'stroke-width': 2,
-                            width: size,
-                            height: size
-                        },
-                        name: name,
-                        element: iconRef.current
-                    });
+                    try {
+                        lucide.createIcons({
+                            attrs: {
+                                class: className,
+                                'stroke-width': 2,
+                                width: size,
+                                height: size
+                            },
+                            name: name,
+                            element: iconRef.current
+                        });
+                    } catch(e) {}
                 }
             }, [name, className, size]);
             return <i ref={iconRef} data-lucide={name} className={className}></i>;
@@ -110,7 +119,7 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbws8CL_jvaeCFA5s25wAVvP6Go2X_342yyXRjUrxRcqCFQFnus33UeqVNmI3JcGjeY/exec";
 
         function PresupuestoApp() {
-            // Datos del cliente desde la URL
+            // Datos del cliente desde la URL o editables
             const [clientData, setClientData] = useState({
                 empresa: '',
                 contacto: '',
@@ -122,6 +131,13 @@
             const [searchTerm, setSearchTerm] = useState('');
             const [selectedVariants, setSelectedVariants] = useState({}); // { code: { code, name, rangeLabel, familyName, qty } }
             const [activeFamilyModal, setActiveFamilyModal] = useState(null); // Family object currently open in modal
+            
+            // Instrumentos agregados manualmente (fuera de catálogo)
+            const [customItems, setCustomItems] = useState([]); // [{ id, name, qty }]
+            const [showCustomModal, setShowCustomModal] = useState(false);
+            const [customName, setCustomName] = useState('');
+            const [customQty, setCustomQty] = useState(1);
+
             const [showTextMode, setShowTextMode] = useState(false);
             const [freeTextList, setFreeTextList] = useState('');
             const [observaciones, setObservaciones] = useState('');
@@ -141,7 +157,7 @@
                 });
             }, []);
 
-            // Actualizar cantidad de una variante específica
+            // Actualizar cantidad de una variante del catálogo
             const updateVariantQty = (variant, delta, familyName) => {
                 setSelectedVariants(prev => {
                     const current = prev[variant.code]?.qty || 0;
@@ -170,10 +186,42 @@
                 }, 0);
             };
 
-            // Total general de equipos en el carrito
+            // Manejo de equipos manuales / personalizados
+            const handleAddCustomItem = (e) => {
+                if (e) e.preventDefault();
+                if (!customName.trim()) return;
+                const newItem = {
+                    id: 'CUSTOM-' + Date.now(),
+                    name: customName.trim(),
+                    qty: Math.max(1, parseInt(customQty) || 1)
+                };
+                setCustomItems(prev => [...prev, newItem]);
+                setCustomName('');
+                setCustomQty(1);
+                setShowCustomModal(false);
+            };
+
+            const updateCustomItemQty = (id, delta) => {
+                setCustomItems(prev => {
+                    return prev.map(item => {
+                        if (item.id === id) {
+                            const newQty = item.qty + delta;
+                            return newQty > 0 ? { ...item, qty: newQty } : null;
+                        }
+                        return item;
+                    }).filter(Boolean);
+                });
+            };
+
+            const totalCustom = useMemo(() => {
+                return customItems.reduce((sum, item) => sum + item.qty, 0);
+            }, [customItems]);
+
+            // Total general de equipos en el pedido (catálogo + manuales)
             const totalEquipos = useMemo(() => {
-                return Object.values(selectedVariants).reduce((sum, item) => sum + item.qty, 0);
-            }, [selectedVariants]);
+                const catalogCount = Object.values(selectedVariants).reduce((sum, item) => sum + item.qty, 0);
+                return catalogCount + totalCustom;
+            }, [selectedVariants, totalCustom]);
 
             // Filtrar familias por categoría y búsqueda
             const filteredFamilies = useMemo(() => {
@@ -213,7 +261,7 @@
                 e.preventDefault();
                 
                 if (totalEquipos === 0 && !freeTextList.trim()) {
-                    alert('Por favor selecciona al menos un equipo o escribe tu lista.');
+                    alert('Por favor agrega al menos un equipo a cotizar o escribe tu lista.');
                     return;
                 }
 
@@ -224,13 +272,22 @@
 
                 setIsSubmitting(true);
 
-                // Armamos el carrito con el formato adecuado
-                const carritoFormatted = Object.values(selectedVariants).map(v => ({
+                // Armamos el carrito combinando catálogo oficial y manuales
+                const catalogFormatted = Object.values(selectedVariants).map(v => ({
                     code: v.code,
                     name: `${v.familyName} - ${v.rangeLabel} (${v.code})`,
                     qty: v.qty,
                     trazabilidad: v.trazabilidad
                 }));
+
+                const customFormatted = customItems.map(item => ({
+                    code: 'A MEDIDA',
+                    name: `${item.name} (Instrumento manual a medida)`,
+                    qty: item.qty,
+                    trazabilidad: 'A cotizar'
+                }));
+
+                const carritoCompleto = [...catalogFormatted, ...customFormatted];
 
                 const payload = {
                     tipo_evento: 'SOLICITUD_PRESUPUESTO_CALIBRACION',
@@ -239,7 +296,8 @@
                     contacto: clientData.contacto || '',
                     email: clientData.email || '',
                     telefono: clientData.telefono || '',
-                    carrito: carritoFormatted,
+                    carrito: carritoCompleto,
+                    equipos_personalizados: customItems,
                     total_equipos: totalEquipos,
                     lista_escrita_libre: freeTextList || '',
                     descuento_aplicado: '10% OFF',
@@ -292,26 +350,40 @@
                                 </p>
                             </div>
 
-                            {/* Badge de cliente vinculado o campos rápidos si viene directo */}
+                            {/* Datos de contacto / Teléfono WhatsApp */}
                             {(clientData.empresa || clientData.email) ? (
-                                <div className="mb-4 p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
-                                    <div className="flex items-center gap-2 text-gray-300 overflow-hidden">
-                                        <div className="p-1 rounded bg-[#FFC700]/20 text-[#FFC700] shrink-0">
-                                            <Icon name="building" size={14} />
+                                <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-white/15 space-y-2">
+                                    <div className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-2 text-gray-300 overflow-hidden">
+                                            <div className="p-1 rounded bg-[#FFC700]/20 text-[#FFC700] shrink-0">
+                                                <Icon name="building" size={14} />
+                                            </div>
+                                            <span className="truncate">
+                                                Cotizando para: <strong className="text-white">{clientData.empresa || clientData.contacto || clientData.email}</strong>
+                                            </span>
                                         </div>
-                                        <span className="truncate">
-                                            Cotizando para: <strong className="text-white">{clientData.empresa || clientData.contacto || clientData.email}</strong>
+                                        <span className="shrink-0 text-[10px] text-green-400 font-bold bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">
+                                            Vinculado
                                         </span>
                                     </div>
-                                    <span className="shrink-0 text-[10px] text-green-400 font-bold bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">
-                                        Vinculado
-                                    </span>
+                                    <div className="relative pt-1 border-t border-white/10">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pt-1">
+                                            <Icon name="phone" size={13} />
+                                        </div>
+                                        <input 
+                                            type="tel"
+                                            value={clientData.telefono}
+                                            onChange={e => setClientData(prev => ({ ...prev, telefono: e.target.value }))}
+                                            placeholder="Teléfono / WhatsApp de contacto (opcional)"
+                                            className="w-full bg-black/40 border border-white/15 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#FFC700]"
+                                        />
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-white/15 space-y-2">
+                                <div className="mb-4 p-3.5 rounded-2xl bg-white/5 border border-white/15 space-y-2.5">
                                     <div className="text-[11px] font-bold text-[#FFC700] flex items-center gap-1.5">
                                         <Icon name="user-check" size={14} />
-                                        <span>Tus datos de contacto (para enviarte la cotización):</span>
+                                        <span>Datos para enviarte la cotización con 10% OFF:</span>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         <input 
@@ -322,12 +394,33 @@
                                             className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
                                         />
                                         <input 
+                                            type="text"
+                                            value={clientData.contacto}
+                                            onChange={e => setClientData(prev => ({ ...prev, contacto: e.target.value }))}
+                                            placeholder="Nombre de contacto"
+                                            className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <input 
                                             type="email"
                                             value={clientData.email}
                                             onChange={e => setClientData(prev => ({ ...prev, email: e.target.value }))}
                                             placeholder="Email de contacto *"
                                             className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
                                         />
+                                        <div className="relative">
+                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                                <Icon name="phone" size={13} />
+                                            </div>
+                                            <input 
+                                                type="tel"
+                                                value={clientData.telefono}
+                                                onChange={e => setClientData(prev => ({ ...prev, telefono: e.target.value }))}
+                                                placeholder="Teléfono / WhatsApp (opcional)"
+                                                className="w-full bg-black/40 border border-white/15 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -372,7 +465,7 @@
                             </div>
 
                             {/* Grilla de Botones de Familias de Instrumentos */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
                                 {filteredFamilies.map(family => {
                                     const familyQty = getFamilySelectedQty(family);
                                     const isSelected = familyQty > 0;
@@ -460,6 +553,69 @@
                                         </div>
                                     );
                                 })}
+
+                                {/* Botón en la grilla para agregar manualmente otro equipo */}
+                                <div 
+                                    onClick={() => setShowCustomModal(true)}
+                                    className="p-3 rounded-2xl border border-dashed border-[#FFC700]/50 bg-gradient-to-b from-white/5 to-[#001a3d]/80 hover:bg-[#FFC700]/10 hover:border-[#FFC700] transition-all duration-200 select-none flex flex-col justify-between cursor-pointer min-h-[105px] group active:scale-95"
+                                >
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <div className="p-1.5 rounded-lg bg-[#FFC700]/20 text-[#FFC700] group-hover:bg-[#FFC700] group-hover:text-[#002654] transition-colors">
+                                            <Icon name="plus-circle" size={16} />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-[#FFC700]">
+                                            A medida
+                                        </span>
+                                    </div>
+                                    <div className="text-xs font-bold text-white leading-tight mb-2 flex-1">
+                                        ¿Otro instrumento?
+                                    </div>
+                                    <div className="mt-auto">
+                                        <span className="text-[11px] font-semibold text-[#FFC700] flex items-center gap-1">
+                                            <span>Agregar manual</span>
+                                            <Icon name="plus" size={12} />
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Si la búsqueda no arroja resultados, sugerir agregar manualmente */}
+                            {filteredFamilies.length === 0 && (
+                                <div className="text-center py-6 bg-white/5 rounded-2xl border border-white/10 p-5 mb-4 animate-fadeIn">
+                                    <Icon name="search-x" size={32} className="text-gray-400 mx-auto mb-2" />
+                                    <p className="text-xs text-gray-300 font-semibold mb-1">
+                                        No encontramos "{searchTerm}" en el listado estándar
+                                    </p>
+                                    <p className="text-[11px] text-gray-400 mb-3">
+                                        ¡Calibramos todo tipo de instrumental! Podés agregarlo a medida:
+                                    </p>
+                                    <button 
+                                        onClick={() => { setCustomName(searchTerm); setShowCustomModal(true); }}
+                                        className="px-4 py-2 bg-[#FFC700] hover:bg-[#ffdb4d] text-[#002654] rounded-xl text-xs font-bold transition-all shadow"
+                                    >
+                                        + Agregar "{searchTerm}" manualmente
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Banner Permanente: ¿Tenés un equipo que no figura en la lista? */}
+                            <div className="bg-white/5 border border-dashed border-white/20 rounded-2xl p-3.5 mb-5 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="p-2 rounded-xl bg-[#FFC700]/10 text-[#FFC700] shrink-0">
+                                        <Icon name="plus-circle" size={18} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="text-xs font-bold text-white leading-tight">¿Tu equipo no figura en la lista?</div>
+                                        <div className="text-[11px] text-gray-400">Podés sumarlo a medida con su nombre o modelo</div>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setShowCustomModal(true)}
+                                    className="shrink-0 py-2 px-3 bg-[#FFC700] hover:bg-[#ffdb4d] text-[#002654] font-bold rounded-xl text-xs flex items-center gap-1 shadow transition-all active:scale-95"
+                                >
+                                    <Icon name="plus" size={13} />
+                                    <span>Agregar manual</span>
+                                </button>
                             </div>
 
                             {/* Alternativa: Escribir lista libre */}
@@ -507,7 +663,7 @@
                                     >
                                         <span className="flex items-center gap-1.5">
                                             <Icon name="shopping-bag" size={15} />
-                                            <span>Equipos seleccionados ({totalEquipos}):</span>
+                                            <span>Equipos en tu pedido ({totalEquipos}):</span>
                                         </span>
                                         <div className="flex items-center gap-1">
                                             <span className="text-[10px] text-gray-400">{showCartDrawer ? 'Ocultar' : 'Ver detalle'}</span>
@@ -518,6 +674,7 @@
                                     {/* Lista detallada de lo que tiene el carrito */}
                                     {showCartDrawer && (
                                         <div className="mt-2.5 pt-2.5 border-t border-white/10 space-y-1.5 max-h-48 overflow-y-auto pr-1 text-xs">
+                                            {/* Equipos del catálogo */}
                                             {Object.values(selectedVariants).map(item => (
                                                 <div key={item.code} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
                                                     <div className="flex-1 pr-2">
@@ -543,6 +700,40 @@
                                                         </div>
                                                         <button 
                                                             onClick={() => updateVariantQty(item, -item.qty, item.familyName)}
+                                                            className="text-gray-400 hover:text-red-400 px-1"
+                                                            title="Eliminar"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* Equipos agregados a medida */}
+                                            {customItems.map(item => (
+                                                <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-[#FFC700]/10 border border-[#FFC700]/30">
+                                                    <div className="flex-1 pr-2">
+                                                        <div className="font-bold text-white leading-tight">{item.name}</div>
+                                                        <div className="text-[10px] font-semibold text-[#FFC700] uppercase tracking-wider">A Medida / Manual</div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center bg-black/40 rounded-lg border border-[#FFC700]/30">
+                                                            <button 
+                                                                onClick={() => updateCustomItemQty(item.id, -1)}
+                                                                className="px-2 py-0.5 text-[#FFC700] hover:bg-white/10"
+                                                            >
+                                                                -
+                                                            </button>
+                                                            <span className="px-2 font-bold text-white text-xs">{item.qty}</span>
+                                                            <button 
+                                                                onClick={() => updateCustomItemQty(item.id, 1)}
+                                                                className="px-2 py-0.5 text-[#FFC700] hover:bg-white/10"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => updateCustomItemQty(item.id, -item.qty)}
                                                             className="text-gray-400 hover:text-red-400 px-1"
                                                             title="Eliminar"
                                                         >
@@ -712,6 +903,98 @@
                                         Listo
                                     </button>
                                 </div>
+
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL PARA AGREGAR EQUIPO MANUALMENTE */}
+                    {showCustomModal && (
+                        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+                            <div className="bg-[#001a3d] border border-white/20 rounded-2xl p-5 w-full max-w-md shadow-2xl">
+                                
+                                <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 rounded-xl bg-[#FFC700] text-[#002654]">
+                                            <Icon name="plus-circle" size={18} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
+                                                Agregar Equipo Manualmente
+                                            </h3>
+                                            <p className="text-[11px] text-gray-400">
+                                                Instrumento fuera del catálogo estándar
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setShowCustomModal(false)}
+                                        className="p-1.5 rounded-full text-gray-400 hover:text-white hover:bg-white/10"
+                                    >
+                                        <Icon name="x" size={18} />
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleAddCustomItem} className="space-y-3.5">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-300 block mb-1">
+                                            Instrumento, Modelo o Rango *
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            required 
+                                            autoFocus
+                                            value={customName}
+                                            onChange={e => setCustomName(e.target.value)}
+                                            placeholder="Ej: Durómetro de banco, Calibrador especial, etc."
+                                            className="w-full bg-black/40 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FFC700]"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-300 block mb-1">
+                                            Cantidad de unidades
+                                        </label>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center bg-black/40 rounded-xl p-1 border border-white/15">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setCustomQty(prev => Math.max(1, prev - 1))}
+                                                    className="w-8 h-8 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
+                                                >
+                                                    <Icon name="minus" size={14} />
+                                                </button>
+                                                <span className="text-xs font-bold text-white px-3">
+                                                    {customQty}
+                                                </span>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setCustomQty(prev => prev + 1)}
+                                                    className="w-8 h-8 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
+                                                >
+                                                    <Icon name="plus" size={14} />
+                                                </button>
+                                            </div>
+                                            <span className="text-[11px] text-gray-400">unidad(es) a cotizar</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowCustomModal(false)}
+                                            className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button 
+                                            type="submit"
+                                            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FFC700] hover:bg-[#ffdb4d] text-[#002654] transition-all shadow"
+                                        >
+                                            Agregar a mi Pedido
+                                        </button>
+                                    </div>
+                                </form>
 
                             </div>
                         </div>

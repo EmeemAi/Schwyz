@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SCHWYZ | Cotizador Rápido de Calibraciones</title>
+    <title>SCHWYZ | Cotizador de Calibraciones</title>
     
     <!-- Tailwind CSS Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,9 +32,17 @@
             opacity: 1; 
             transition: opacity 0.25s ease-in; 
         }
-        /* Mobile tap highlight reset */
         * {
             -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 199, 0, 0.3);
+            border-radius: 4px;
         }
     </style>
 
@@ -65,22 +73,19 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        const RAW_INSTRUMENTS = [{"code": "LAB- 01", "name": "alesametro (incluye precio reloj)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 02", "name": "Analizador de redes ( Lazo, telurimetro, megohometro, continuidad, disyuntores, voltaje", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 03", "name": "Balanza hasta 50KG minima division 0.1grs", "trazabilidad": "INTI-SAC", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 04", "name": "Calibre 0-300 mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 05", "name": "Calibre 301-500 mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 06", "name": "Calibre 600mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 07", "name": "Calibre 1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 08", "name": "Calibre profundidad hasta 200mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 09", "name": "Calibre profundidad 201 hasta 300mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 10", "name": "Calibre de Interiores", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 11", "name": "Calibre de soldadura (sold-8, catetometro, sold-9, sold-13)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 12", "name": "Calibrador de procesos (se mide entrada y salida volt, corriente, resistencia, frecuencia, termocupla.", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 13", "name": "Capacimetro (se realiza de 10 nanos a 1 micro) en 5 puntos", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 14", "name": "Cinta Métrica hasta 5mts", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 15", "name": "Cinta Métrica hasta 20mts", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 17", "name": "Cinta PI 20-500mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 18", "name": "Cinta PI 500-1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 19", "name": "Cinta PI 1000-1100mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 20", "name": "Controlador de temperatura", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 21", "name": "Cronometro", "trazabilidad": "ILAC", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 22", "name": "Cuentametros / Odometros", "trazabilidad": "OAA", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 23", "name": "Decibelimetro", "trazabilidad": "CINTRA", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 24", "name": "Dinamometro hasta 50kg/500N (traccion o compresion)", "trazabilidad": "INTI-SAC", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 25", "name": "Durometro Shore A y D", "trazabilidad": "INTI-SAC", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 26", "name": "Espesimetro 0-10 x 0.01mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 27", "name": "Espesimetro 0-1 x 0.001mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 28", "name": "Escuadra (medicion en angulo)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 29", "name": "Fleximetro", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 30", "name": "Goniometro", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 31", "name": "Grindometros", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 32", "name": "Inclinometro", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 33", "name": "Interimetro (pinza de interior)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 34", "name": "Luxometro", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 35", "name": "Manometro clase 1%/manovacuometro/vacuometro misma clase -1 hasta 650 bar", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 36", "name": "Manometro clase 0.5% / vacuometro misma clase hasta -1 hasta 650 bar", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 37", "name": "Manometro clase 0.25% / 0.1% /vacuometro misma clase  -1 hasta 650 bar", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 38", "name": "Manometro digitales hasta 0.1%", "trazabilidad": "OAA", "category": "Presión y Vacío"}, {"code": "LAB- 39", "name": "Manómetro diferencial", "trazabilidad": "OAA", "category": "Otros Instrumentos"}, {"code": "LAB- 40", "name": "Medidor de Altura (calibre) hasta 300mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 41", "name": "Medidor de Altura (calibre) hasta 600mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 42", "name": "Medidor de Altura (calibre) hasta 1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 43", "name": "Medidor de distancia hasta 10 metros.", "trazabilidad": "INTI-SAC", "category": "Otros Instrumentos"}, {"code": "LAB- 44", "name": "Medidor de diametro Interno-Pinza interior", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 45", "name": "Medidor de impedancia de Lazo", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 46", "name": "Medidor de pintura x modo / ultrasonido", "trazabilidad": "OAA", "category": "Otros Instrumentos"}, {"code": "LAB- 47", "name": "Medidor de puesta a tierra (TELURIMETRO)", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 48", "name": "Meghometro en resistencia hasta 200mgohm", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 49", "name": "Micrometro 0‐25 Y 25-50", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 50", "name": "Micrometro 50-75 Y 75-100", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 51", "name": "Micrometro 100-125 Y 125-150", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 52", "name": "Micrometro 150‐175 Y 175-200", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 53", "name": "Micrometro 200-225 Y 225-300", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 54", "name": "Micrometro 300-400", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 55", "name": "Micrometro 400-600", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 56", "name": "Micrometro interior 0-50mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 57", "name": "Micrometro interior 50-100mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 58", "name": "Micrometro interior 100-200mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 59", "name": "Micrometro interior 200-300mm (2 topes)", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 61", "name": "Micrometro (ASTAS-PROLONGADORES) 0-100", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 62", "name": "Micrometro (ASTAS-PROLONGADORES) 0-150", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 63", "name": "Micrometro (ASTAS-PROLONGADORES) 100-200", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 64", "name": "Micrometro (ASTAS-PROLONGADORES) 150-300", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 65", "name": "Micrometro De Profundidad 0-50", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 66", "name": "Micrometro de Profundidad 0-150", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 67", "name": "Micrometro de profundidad 0-300", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 68", "name": "Multimetro (se realiza en Corriente/Tension/Resistencia) por mas parametros consultar", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 69", "name": "Pinza Amperometrica (se realiza CC/CA)", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 70", "name": "Pinza Amperometrica (se realiza CC/CA/tension/resistencia)", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 71", "name": "Pirometro Laser hasta 500C", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 72", "name": "Plantilla de pvc x unidad hasta 2mm", "trazabilidad": "OAA", "category": "Otros Instrumentos"}, {"code": "LAB- 73", "name": "Presostato", "trazabilidad": "INTI-SAC", "category": "Presión y Vacío"}, {"code": "LAB- 74", "name": "Probador de bateria", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 75", "name": "Probador de disyuntores", "trazabilidad": "INTI-SAC", "category": "Electricidad y Óptica"}, {"code": "LAB- 76", "name": "Regla hasta 300mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 77", "name": "Regla 300 a 500mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 78", "name": "Regla 500 a 1000mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 79", "name": "Reloj palpador", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 80", "name": "Reloj Comparador 0-10mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 81", "name": "Reloj comparador 0-30mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 82", "name": "Reloj comparador 0-50mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 83", "name": "Reloj comparador 0-100mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 84", "name": "Reloj comparador 0.001mm", "trazabilidad": "OAA", "category": "Dimensional y Mecánica"}, {"code": "LAB- 85", "name": "Rugosimetro", "trazabilidad": "INTI-SAC", "category": "Dimensional y Mecánica"}, {"code": "LAB- 86", "name": "Sondas de espesor x unidad hasta largo 100mm", "trazabilidad": "INTI-SAC", "category": "Dimensional y Mecánica"}, {"code": "LAB- 87", "name": "sondas de espesor x unidad hasta largo 300mm", "trazabilidad": "INTI-SAC", "category": "Dimensional y Mecánica"}, {"code": "LAB- 88", "name": "Tacometro x modo", "trazabilidad": "INTI-SAC", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 89", "name": "Tacometro Estroboscopico", "trazabilidad": "INTI-SAC", "category": "Acústica, Tiempo y Giro"}, {"code": "LAB- 90", "name": "Tensiometro digital (para personas)", "trazabilidad": "INTI-SAC", "category": "Otros Instrumentos"}, {"code": "LAB- 91", "name": "Termohigrometro", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 92", "name": "Termometro ambiente", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 93", "name": "Termometro c/ sensor - vidrio  (-20C a 400C) en 3 puntos", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 94", "name": "Adicional por punto extra", "trazabilidad": "INTI-SAC", "category": "Otros Instrumentos"}, {"code": "LAB- 95", "name": "Termostato", "trazabilidad": "INTI-SAC", "category": "Temperatura y Clima"}, {"code": "LAB- 96", "name": "Torquimetro hasta 300NM o equivalente (incluye ajuste)", "trazabilidad": "OAA", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 97", "name": "Torquimetro 301 hasta 1000NM o equivalente (incluye ajuste)", "trazabilidad": "OAA", "category": "Fuerza, Torque y Masa"}, {"code": "LAB- 98", "name": "Anemómetro (Velocidad de viento)", "trazabilidad": "Consultar", "category": "Otros Instrumentos"}, {"code": "LAB-99", "name": "Anemometro (temperatura y velocidad de viento)", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-100", "name": "Conductimetro", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-101", "name": "Medidor de cloro libre", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-102", "name": "Medidor de humedad de madera", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-103", "name": "Medidor de humedad de papel", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-104", "name": "Medidor de humedad de oxigeno disuelto en agua", "trazabilidad": "", "category": "Temperatura y Clima"}, {"code": "LAB-105", "name": "Medidor de ORP", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-106", "name": "Medidor de peachimetro con electrodo separador", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-107", "name": "Medidor de peachimetro con electrodo integrado", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-108", "name": "Refractometro optico", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-109", "name": "Turbidimetro", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-110", "name": "MEDIDOR MONOGAS", "trazabilidad": "", "category": "Química y Gases"}, {"code": "LAB-111", "name": "MEDIDOR DE 4 GASES", "trazabilidad": "", "category": "Química y Gases"}];
+        const FAMILIES_DATA = [{"id": "calibre___pie_de_rey", "name": "Calibre / Pie de rey", "icon": "ruler", "category": "Dimensional", "variants": [{"code": "LAB- 04", "name": "Calibre 0-300 mm", "trazabilidad": "OAA", "fullName": "Calibre 0-300 mm", "rangeLabel": "0-300 mm"}, {"code": "LAB- 05", "name": "Calibre 301-500 mm", "trazabilidad": "OAA", "fullName": "Calibre 301-500 mm", "rangeLabel": "301-500 mm"}, {"code": "LAB- 06", "name": "Calibre 600mm", "trazabilidad": "OAA", "fullName": "Calibre 600mm", "rangeLabel": "600mm"}, {"code": "LAB- 07", "name": "Calibre 1000mm", "trazabilidad": "OAA", "fullName": "Calibre 1000mm", "rangeLabel": "1000mm"}, {"code": "LAB- 08", "name": "Calibre profundidad hasta 200mm", "trazabilidad": "OAA", "fullName": "Calibre profundidad hasta 200mm", "rangeLabel": "Profundidad hasta 200mm"}, {"code": "LAB- 09", "name": "Calibre profundidad 201 hasta 300mm", "trazabilidad": "OAA", "fullName": "Calibre profundidad 201 hasta 300mm", "rangeLabel": "Profundidad 201 hasta 300mm"}, {"code": "LAB- 10", "name": "Calibre de Interiores", "trazabilidad": "OAA", "fullName": "Calibre de Interiores", "rangeLabel": "De interiores"}, {"code": "LAB- 11", "name": "Calibre de soldadura (sold-8, catetometro, sold-9, sold-13)", "trazabilidad": "OAA", "fullName": "Calibre de soldadura (sold-8, catetometro, sold-9, sold-13)", "rangeLabel": "De soldadura (sold-8, catetometro, sold-9, sold-13)"}, {"code": "LAB- 40", "name": "Medidor de Altura (calibre) hasta 300mm", "trazabilidad": "OAA", "fullName": "Medidor de Altura (calibre) hasta 300mm", "rangeLabel": "Medidor de altura (calibre) hasta 300mm"}, {"code": "LAB- 41", "name": "Medidor de Altura (calibre) hasta 600mm", "trazabilidad": "OAA", "fullName": "Medidor de Altura (calibre) hasta 600mm", "rangeLabel": "Medidor de altura (calibre) hasta 600mm"}, {"code": "LAB- 42", "name": "Medidor de Altura (calibre) hasta 1000mm", "trazabilidad": "OAA", "fullName": "Medidor de Altura (calibre) hasta 1000mm", "rangeLabel": "Medidor de altura (calibre) hasta 1000mm"}]}, {"id": "manómetro___vacuómetro", "name": "Manómetro / Vacuómetro", "icon": "gauge", "category": "Presión", "variants": [{"code": "LAB- 35", "name": "Manometro clase 1%/manovacuometro/vacuometro misma clase -1 hasta 650 bar", "trazabilidad": "OAA", "fullName": "Manometro clase 1%/manovacuometro/vacuometro misma clase -1 hasta 650 bar", "rangeLabel": "Clase 1%/manovacuometro/vacuometro misma clase -1 hasta 650 bar"}, {"code": "LAB- 36", "name": "Manometro clase 0.5% / vacuometro misma clase hasta -1 hasta 650 bar", "trazabilidad": "OAA", "fullName": "Manometro clase 0.5% / vacuometro misma clase hasta -1 hasta 650 bar", "rangeLabel": "Clase 0.5% / vacuometro misma clase hasta -1 hasta 650 bar"}, {"code": "LAB- 37", "name": "Manometro clase 0.25% / 0.1% /vacuometro misma clase  -1 hasta 650 bar", "trazabilidad": "OAA", "fullName": "Manometro clase 0.25% / 0.1% /vacuometro misma clase  -1 hasta 650 bar", "rangeLabel": "Clase 0.25% / 0.1% /vacuometro misma clase  -1 hasta 650 bar"}, {"code": "LAB- 38", "name": "Manometro digitales hasta 0.1%", "trazabilidad": "OAA", "fullName": "Manometro digitales hasta 0.1%", "rangeLabel": "Digitales hasta 0.1%"}, {"code": "LAB- 39", "name": "Manómetro diferencial", "trazabilidad": "OAA", "fullName": "Manómetro diferencial", "rangeLabel": "Diferencial"}]}, {"id": "termohigrómetro", "name": "Termohigrómetro", "icon": "thermometer-sun", "category": "Temperatura", "variants": [{"code": "LAB- 91", "name": "Termohigrometro", "trazabilidad": "INTI-SAC", "fullName": "Termohigrometro", "rangeLabel": "Termohigrometro"}]}, {"id": "micrómetro", "name": "Micrómetro", "icon": "crosshair", "category": "Dimensional", "variants": [{"code": "LAB- 49", "name": "Micrometro 0‐25 Y 25-50", "trazabilidad": "OAA", "fullName": "Micrometro 0‐25 Y 25-50", "rangeLabel": "0‐25 y 25-50"}, {"code": "LAB- 50", "name": "Micrometro 50-75 Y 75-100", "trazabilidad": "OAA", "fullName": "Micrometro 50-75 Y 75-100", "rangeLabel": "50-75 y 75-100"}, {"code": "LAB- 51", "name": "Micrometro 100-125 Y 125-150", "trazabilidad": "OAA", "fullName": "Micrometro 100-125 Y 125-150", "rangeLabel": "100-125 y 125-150"}, {"code": "LAB- 52", "name": "Micrometro 150‐175 Y 175-200", "trazabilidad": "OAA", "fullName": "Micrometro 150‐175 Y 175-200", "rangeLabel": "150‐175 y 175-200"}, {"code": "LAB- 53", "name": "Micrometro 200-225 Y 225-300", "trazabilidad": "OAA", "fullName": "Micrometro 200-225 Y 225-300", "rangeLabel": "200-225 y 225-300"}, {"code": "LAB- 54", "name": "Micrometro 300-400", "trazabilidad": "OAA", "fullName": "Micrometro 300-400", "rangeLabel": "300-400"}, {"code": "LAB- 55", "name": "Micrometro 400-600", "trazabilidad": "OAA", "fullName": "Micrometro 400-600", "rangeLabel": "400-600"}, {"code": "LAB- 56", "name": "Micrometro interior 0-50mm (2 topes)", "trazabilidad": "OAA", "fullName": "Micrometro interior 0-50mm (2 topes)", "rangeLabel": "Interior 0-50mm (2 topes)"}, {"code": "LAB- 57", "name": "Micrometro interior 50-100mm (2 topes)", "trazabilidad": "OAA", "fullName": "Micrometro interior 50-100mm (2 topes)", "rangeLabel": "Interior 50-100mm (2 topes)"}, {"code": "LAB- 58", "name": "Micrometro interior 100-200mm (2 topes)", "trazabilidad": "OAA", "fullName": "Micrometro interior 100-200mm (2 topes)", "rangeLabel": "Interior 100-200mm (2 topes)"}, {"code": "LAB- 59", "name": "Micrometro interior 200-300mm (2 topes)", "trazabilidad": "OAA", "fullName": "Micrometro interior 200-300mm (2 topes)", "rangeLabel": "Interior 200-300mm (2 topes)"}, {"code": "LAB- 61", "name": "Micrometro (ASTAS-PROLONGADORES) 0-100", "trazabilidad": "OAA", "fullName": "Micrometro (ASTAS-PROLONGADORES) 0-100", "rangeLabel": "(astas-prolongadores) 0-100"}, {"code": "LAB- 62", "name": "Micrometro (ASTAS-PROLONGADORES) 0-150", "trazabilidad": "OAA", "fullName": "Micrometro (ASTAS-PROLONGADORES) 0-150", "rangeLabel": "(astas-prolongadores) 0-150"}, {"code": "LAB- 63", "name": "Micrometro (ASTAS-PROLONGADORES) 100-200", "trazabilidad": "OAA", "fullName": "Micrometro (ASTAS-PROLONGADORES) 100-200", "rangeLabel": "(astas-prolongadores) 100-200"}, {"code": "LAB- 64", "name": "Micrometro (ASTAS-PROLONGADORES) 150-300", "trazabilidad": "OAA", "fullName": "Micrometro (ASTAS-PROLONGADORES) 150-300", "rangeLabel": "(astas-prolongadores) 150-300"}, {"code": "LAB- 65", "name": "Micrometro De Profundidad 0-50", "trazabilidad": "OAA", "fullName": "Micrometro De Profundidad 0-50", "rangeLabel": "De profundidad 0-50"}, {"code": "LAB- 66", "name": "Micrometro de Profundidad 0-150", "trazabilidad": "OAA", "fullName": "Micrometro de Profundidad 0-150", "rangeLabel": "De profundidad 0-150"}, {"code": "LAB- 67", "name": "Micrometro de profundidad 0-300", "trazabilidad": "OAA", "fullName": "Micrometro de profundidad 0-300", "rangeLabel": "De profundidad 0-300"}]}, {"id": "reloj_comparador___palpador", "name": "Reloj Comparador / Palpador", "icon": "clock", "category": "Dimensional", "variants": [{"code": "LAB- 01", "name": "alesametro (incluye precio reloj)", "trazabilidad": "OAA", "fullName": "alesametro (incluye precio reloj)", "rangeLabel": "Alesametro (incluye precio reloj)"}, {"code": "LAB- 79", "name": "Reloj palpador", "trazabilidad": "OAA", "fullName": "Reloj palpador", "rangeLabel": "Palpador"}, {"code": "LAB- 80", "name": "Reloj Comparador 0-10mm", "trazabilidad": "OAA", "fullName": "Reloj Comparador 0-10mm", "rangeLabel": "Comparador 0-10mm"}, {"code": "LAB- 81", "name": "Reloj comparador 0-30mm", "trazabilidad": "OAA", "fullName": "Reloj comparador 0-30mm", "rangeLabel": "Comparador 0-30mm"}, {"code": "LAB- 82", "name": "Reloj comparador 0-50mm", "trazabilidad": "OAA", "fullName": "Reloj comparador 0-50mm", "rangeLabel": "Comparador 0-50mm"}, {"code": "LAB- 83", "name": "Reloj comparador 0-100mm", "trazabilidad": "OAA", "fullName": "Reloj comparador 0-100mm", "rangeLabel": "Comparador 0-100mm"}, {"code": "LAB- 84", "name": "Reloj comparador 0.001mm", "trazabilidad": "OAA", "fullName": "Reloj comparador 0.001mm", "rangeLabel": "Comparador 0.001mm"}]}, {"id": "torquímetro", "name": "Torquímetro", "icon": "wrench", "category": "Fuerza", "variants": [{"code": "LAB- 96", "name": "Torquimetro hasta 300NM o equivalente (incluye ajuste)", "trazabilidad": "OAA", "fullName": "Torquimetro hasta 300NM o equivalente (incluye ajuste)", "rangeLabel": "Hasta 300nm o equivalente (incluye ajuste)"}, {"code": "LAB- 97", "name": "Torquimetro 301 hasta 1000NM o equivalente (incluye ajuste)", "trazabilidad": "OAA", "fullName": "Torquimetro 301 hasta 1000NM o equivalente (incluye ajuste)", "rangeLabel": "301 hasta 1000nm o equivalente (incluye ajuste)"}]}, {"id": "multímetro___tester", "name": "Multímetro / Tester", "icon": "zap", "category": "Electricidad", "variants": [{"code": "LAB- 68", "name": "Multimetro (se realiza en Corriente/Tension/Resistencia) por mas parametros consultar", "trazabilidad": "INTI-SAC", "fullName": "Multimetro (se realiza en Corriente/Tension/Resistencia) por mas parametros consultar", "rangeLabel": "Multimetro (se realiza en corriente/tension/resistencia) por mas parametros consultar"}]}, {"id": "pinza_amperométrica", "name": "Pinza Amperométrica", "icon": "activity", "category": "Electricidad", "variants": [{"code": "LAB- 69", "name": "Pinza Amperometrica (se realiza CC/CA)", "trazabilidad": "INTI-SAC", "fullName": "Pinza Amperometrica (se realiza CC/CA)", "rangeLabel": "Pinza amperometrica (se realiza cc/ca)"}, {"code": "LAB- 70", "name": "Pinza Amperometrica (se realiza CC/CA/tension/resistencia)", "trazabilidad": "INTI-SAC", "fullName": "Pinza Amperometrica (se realiza CC/CA/tension/resistencia)", "rangeLabel": "Pinza amperometrica (se realiza cc/ca/tension/resistencia)"}]}, {"id": "balanza", "name": "Balanza", "icon": "scale", "category": "Masa", "variants": [{"code": "LAB- 03", "name": "Balanza hasta 50KG minima division 0.1grs", "trazabilidad": "INTI-SAC", "fullName": "Balanza hasta 50KG minima division 0.1grs", "rangeLabel": "Balanza hasta 50kg minima division 0.1grs"}]}, {"id": "termómetro___pirómetro", "name": "Termómetro / Pirómetro", "icon": "thermometer", "category": "Temperatura", "variants": [{"code": "LAB- 71", "name": "Pirometro Laser hasta 500C", "trazabilidad": "INTI-SAC", "fullName": "Pirometro Laser hasta 500C", "rangeLabel": "Pirometro laser hasta 500c"}, {"code": "LAB- 92", "name": "Termometro ambiente", "trazabilidad": "INTI-SAC", "fullName": "Termometro ambiente", "rangeLabel": "Termometro ambiente"}, {"code": "LAB- 93", "name": "Termometro c/ sensor - vidrio  (-20C a 400C) en 3 puntos", "trazabilidad": "INTI-SAC", "fullName": "Termometro c/ sensor - vidrio  (-20C a 400C) en 3 puntos", "rangeLabel": "Termometro c/ sensor - vidrio  (-20c a 400c) en 3 puntos"}]}, {"id": "decibelímetro", "name": "Decibelímetro", "icon": "volume-2", "category": "Acústica", "variants": [{"code": "LAB- 23", "name": "Decibelimetro", "trazabilidad": "CINTRA", "fullName": "Decibelimetro", "rangeLabel": "Decibelimetro"}]}, {"id": "telurímetro_(puesta_a_tierra)", "name": "Telurímetro (Puesta a tierra)", "icon": "shield-alert", "category": "Electricidad", "variants": [{"code": "LAB- 02", "name": "Analizador de redes ( Lazo, telurimetro, megohometro, continuidad, disyuntores, voltaje", "trazabilidad": "INTI-SAC", "fullName": "Analizador de redes ( Lazo, telurimetro, megohometro, continuidad, disyuntores, voltaje", "rangeLabel": "Analizador de redes ( lazo, telurimetro, megohometro, continuidad, disyuntores, voltaje"}, {"code": "LAB- 47", "name": "Medidor de puesta a tierra (TELURIMETRO)", "trazabilidad": "INTI-SAC", "fullName": "Medidor de puesta a tierra (TELURIMETRO)", "rangeLabel": "Medidor de puesta a tierra (telurimetro)"}]}, {"id": "medidor_de_pintura___espesor", "name": "Medidor de Pintura / Espesor", "icon": "paintbrush", "category": "Dimensional", "variants": [{"code": "LAB- 46", "name": "Medidor de pintura x modo / ultrasonido", "trazabilidad": "OAA", "fullName": "Medidor de pintura x modo / ultrasonido", "rangeLabel": "Medidor de pintura x modo / ultrasonido"}]}, {"id": "espesímetro___sondas", "name": "Espesímetro / Sondas", "icon": "layers", "category": "Dimensional", "variants": [{"code": "LAB- 26", "name": "Espesimetro 0-10 x 0.01mm", "trazabilidad": "OAA", "fullName": "Espesimetro 0-10 x 0.01mm", "rangeLabel": "Espesimetro 0-10 x 0.01mm"}, {"code": "LAB- 27", "name": "Espesimetro 0-1 x 0.001mm", "trazabilidad": "OAA", "fullName": "Espesimetro 0-1 x 0.001mm", "rangeLabel": "Espesimetro 0-1 x 0.001mm"}, {"code": "LAB- 86", "name": "Sondas de espesor x unidad hasta largo 100mm", "trazabilidad": "INTI-SAC", "fullName": "Sondas de espesor x unidad hasta largo 100mm", "rangeLabel": "Sondas de espesor x unidad hasta largo 100mm"}, {"code": "LAB- 87", "name": "sondas de espesor x unidad hasta largo 300mm", "trazabilidad": "INTI-SAC", "fullName": "sondas de espesor x unidad hasta largo 300mm", "rangeLabel": "Sondas de espesor x unidad hasta largo 300mm"}]}, {"id": "cronómetro", "name": "Cronómetro", "icon": "timer", "category": "Acústica", "variants": [{"code": "LAB- 21", "name": "Cronometro", "trazabilidad": "ILAC", "fullName": "Cronometro", "rangeLabel": "Cronometro"}]}, {"id": "tacómetro", "name": "Tacómetro", "icon": "gauge", "category": "Acústica", "variants": [{"code": "LAB- 88", "name": "Tacometro x modo", "trazabilidad": "INTI-SAC", "fullName": "Tacometro x modo", "rangeLabel": "Tacometro x modo"}, {"code": "LAB- 89", "name": "Tacometro Estroboscopico", "trazabilidad": "INTI-SAC", "fullName": "Tacometro Estroboscopico", "rangeLabel": "Tacometro estroboscopico"}]}, {"id": "dinamómetro", "name": "Dinamómetro", "icon": "activity", "category": "Fuerza", "variants": [{"code": "LAB- 24", "name": "Dinamometro hasta 50kg/500N (traccion o compresion)", "trazabilidad": "INTI-SAC", "fullName": "Dinamometro hasta 50kg/500N (traccion o compresion)", "rangeLabel": "Dinamometro hasta 50kg/500n (traccion o compresion)"}]}, {"id": "durómetro", "name": "Durómetro", "icon": "shield", "category": "Fuerza", "variants": [{"code": "LAB- 25", "name": "Durometro Shore A y D", "trazabilidad": "INTI-SAC", "fullName": "Durometro Shore A y D", "rangeLabel": "Durometro shore a y d"}]}, {"id": "cinta___regla___odómetro", "name": "Cinta / Regla / Odómetro", "icon": "ruler", "category": "Dimensional", "variants": [{"code": "LAB- 14", "name": "Cinta Métrica hasta 5mts", "trazabilidad": "OAA", "fullName": "Cinta Métrica hasta 5mts", "rangeLabel": "Cinta métrica hasta 5mts"}, {"code": "LAB- 15", "name": "Cinta Métrica hasta 20mts", "trazabilidad": "OAA", "fullName": "Cinta Métrica hasta 20mts", "rangeLabel": "Cinta métrica hasta 20mts"}, {"code": "LAB- 17", "name": "Cinta PI 20-500mm", "trazabilidad": "OAA", "fullName": "Cinta PI 20-500mm", "rangeLabel": "Cinta pi 20-500mm"}, {"code": "LAB- 18", "name": "Cinta PI 500-1000mm", "trazabilidad": "OAA", "fullName": "Cinta PI 500-1000mm", "rangeLabel": "Cinta pi 500-1000mm"}, {"code": "LAB- 19", "name": "Cinta PI 1000-1100mm", "trazabilidad": "OAA", "fullName": "Cinta PI 1000-1100mm", "rangeLabel": "Cinta pi 1000-1100mm"}, {"code": "LAB- 22", "name": "Cuentametros / Odometros", "trazabilidad": "OAA", "fullName": "Cuentametros / Odometros", "rangeLabel": "Cuentametros / odometros"}, {"code": "LAB- 76", "name": "Regla hasta 300mm", "trazabilidad": "OAA", "fullName": "Regla hasta 300mm", "rangeLabel": "Regla hasta 300mm"}, {"code": "LAB- 77", "name": "Regla 300 a 500mm", "trazabilidad": "OAA", "fullName": "Regla 300 a 500mm", "rangeLabel": "Regla 300 a 500mm"}, {"code": "LAB- 78", "name": "Regla 500 a 1000mm", "trazabilidad": "OAA", "fullName": "Regla 500 a 1000mm", "rangeLabel": "Regla 500 a 1000mm"}]}, {"id": "goniómetro___inclinómetro", "name": "Goniómetro / Inclinómetro", "icon": "compass", "category": "Dimensional", "variants": [{"code": "LAB- 28", "name": "Escuadra (medicion en angulo)", "trazabilidad": "OAA", "fullName": "Escuadra (medicion en angulo)", "rangeLabel": "Escuadra (medicion en angulo)"}, {"code": "LAB- 29", "name": "Fleximetro", "trazabilidad": "OAA", "fullName": "Fleximetro", "rangeLabel": "Fleximetro"}, {"code": "LAB- 30", "name": "Goniometro", "trazabilidad": "OAA", "fullName": "Goniometro", "rangeLabel": "Goniometro"}, {"code": "LAB- 32", "name": "Inclinometro", "trazabilidad": "OAA", "fullName": "Inclinometro", "rangeLabel": "Inclinometro"}]}, {"id": "alesámetro___interímetro", "name": "Alesámetro / Interímetro", "icon": "circle-dot", "category": "Dimensional", "variants": [{"code": "LAB- 33", "name": "Interimetro (pinza de interior)", "trazabilidad": "OAA", "fullName": "Interimetro (pinza de interior)", "rangeLabel": "Interimetro (pinza de interior)"}, {"code": "LAB- 44", "name": "Medidor de diametro Interno-Pinza interior", "trazabilidad": "OAA", "fullName": "Medidor de diametro Interno-Pinza interior", "rangeLabel": "Medidor de diametro interno-pinza interior"}]}, {"id": "rugosímetro", "name": "Rugosímetro", "icon": "sliders", "category": "Dimensional", "variants": [{"code": "LAB- 85", "name": "Rugosimetro", "trazabilidad": "INTI-SAC", "fullName": "Rugosimetro", "rangeLabel": "Rugosimetro"}]}, {"id": "anemómetro", "name": "Anemómetro", "icon": "wind", "category": "Temperatura", "variants": [{"code": "LAB- 98", "name": "Anemómetro (Velocidad de viento)", "trazabilidad": "Consultar", "fullName": "Anemómetro (Velocidad de viento)", "rangeLabel": "Anemómetro (velocidad de viento)"}, {"code": "LAB-99", "name": "Anemometro (temperatura y velocidad de viento)", "trazabilidad": "", "fullName": "Anemometro (temperatura y velocidad de viento)", "rangeLabel": "Anemometro (temperatura y velocidad de viento)"}]}, {"id": "detector_de_gases_(mono___4_gases)", "name": "Detector de Gases (Mono / 4 Gases)", "icon": "alert-triangle", "category": "Química", "variants": [{"code": "LAB-110", "name": "MEDIDOR MONOGAS", "trazabilidad": "", "fullName": "MEDIDOR MONOGAS", "rangeLabel": "Medidor monogas"}, {"code": "LAB-111", "name": "MEDIDOR DE 4 GASES", "trazabilidad": "", "fullName": "MEDIDOR DE 4 GASES", "rangeLabel": "Medidor de 4 gases"}]}, {"id": "peachímetro_(ph)", "name": "Peachímetro (pH)", "icon": "flask-conical", "category": "Química", "variants": [{"code": "LAB-106", "name": "Medidor de peachimetro con electrodo separador", "trazabilidad": "", "fullName": "Medidor de peachimetro con electrodo separador", "rangeLabel": "Medidor de peachimetro con electrodo separador"}, {"code": "LAB-107", "name": "Medidor de peachimetro con electrodo integrado", "trazabilidad": "", "fullName": "Medidor de peachimetro con electrodo integrado", "rangeLabel": "Medidor de peachimetro con electrodo integrado"}]}, {"id": "megóhmetro", "name": "Megóhmetro", "icon": "zap-off", "category": "Electricidad", "variants": [{"code": "LAB- 48", "name": "Meghometro en resistencia hasta 200mgohm", "trazabilidad": "INTI-SAC", "fullName": "Meghometro en resistencia hasta 200mgohm", "rangeLabel": "Meghometro en resistencia hasta 200mgohm"}]}, {"id": "analizadores_&_probadores_eléctricos", "name": "Analizadores & Probadores Eléctricos", "icon": "cpu", "category": "Electricidad", "variants": [{"code": "LAB- 12", "name": "Calibrador de procesos (se mide entrada y salida volt, corriente, resistencia, frecuencia, termocupla.", "trazabilidad": "INTI-SAC", "fullName": "Calibrador de procesos (se mide entrada y salida volt, corriente, resistencia, frecuencia, termocupla.", "rangeLabel": "Calibrador de procesos (se mide entrada y salida volt, corriente, resistencia, frecuencia, termocupla."}, {"code": "LAB- 13", "name": "Capacimetro (se realiza de 10 nanos a 1 micro) en 5 puntos", "trazabilidad": "INTI-SAC", "fullName": "Capacimetro (se realiza de 10 nanos a 1 micro) en 5 puntos", "rangeLabel": "Capacimetro (se realiza de 10 nanos a 1 micro) en 5 puntos"}, {"code": "LAB- 45", "name": "Medidor de impedancia de Lazo", "trazabilidad": "INTI-SAC", "fullName": "Medidor de impedancia de Lazo", "rangeLabel": "Medidor de impedancia de lazo"}, {"code": "LAB- 74", "name": "Probador de bateria", "trazabilidad": "INTI-SAC", "fullName": "Probador de bateria", "rangeLabel": "Probador de bateria"}, {"code": "LAB- 75", "name": "Probador de disyuntores", "trazabilidad": "INTI-SAC", "fullName": "Probador de disyuntores", "rangeLabel": "Probador de disyuntores"}]}, {"id": "instrumental_químico___óptico", "name": "Instrumental Químico / Óptico", "icon": "test-tube", "category": "Química", "variants": [{"code": "LAB-100", "name": "Conductimetro", "trazabilidad": "", "fullName": "Conductimetro", "rangeLabel": "Conductimetro"}, {"code": "LAB-101", "name": "Medidor de cloro libre", "trazabilidad": "", "fullName": "Medidor de cloro libre", "rangeLabel": "Medidor de cloro libre"}, {"code": "LAB-105", "name": "Medidor de ORP", "trazabilidad": "", "fullName": "Medidor de ORP", "rangeLabel": "Medidor de orp"}, {"code": "LAB-108", "name": "Refractometro optico", "trazabilidad": "", "fullName": "Refractometro optico", "rangeLabel": "Refractometro optico"}, {"code": "LAB-109", "name": "Turbidimetro", "trazabilidad": "", "fullName": "Turbidimetro", "rangeLabel": "Turbidimetro"}]}, {"id": "medidor_de_humedad_(madera_papel)", "name": "Medidor de Humedad (Madera/Papel)", "icon": "droplet", "category": "Temperatura", "variants": [{"code": "LAB-102", "name": "Medidor de humedad de madera", "trazabilidad": "", "fullName": "Medidor de humedad de madera", "rangeLabel": "Medidor de humedad de madera"}, {"code": "LAB-103", "name": "Medidor de humedad de papel", "trazabilidad": "", "fullName": "Medidor de humedad de papel", "rangeLabel": "Medidor de humedad de papel"}, {"code": "LAB-104", "name": "Medidor de humedad de oxigeno disuelto en agua", "trazabilidad": "", "fullName": "Medidor de humedad de oxigeno disuelto en agua", "rangeLabel": "Medidor de humedad de oxigeno disuelto en agua"}]}, {"id": "controlador_de_temperatura", "name": "Controlador de Temperatura", "icon": "thermometer-snowflake", "category": "Temperatura", "variants": [{"code": "LAB- 20", "name": "Controlador de temperatura", "trazabilidad": "INTI-SAC", "fullName": "Controlador de temperatura", "rangeLabel": "Controlador de temperatura"}, {"code": "LAB- 95", "name": "Termostato", "trazabilidad": "INTI-SAC", "fullName": "Termostato", "rangeLabel": "Termostato"}]}, {"id": "presostato", "name": "Presostato", "icon": "settings", "category": "Presión", "variants": [{"code": "LAB- 73", "name": "Presostato", "trazabilidad": "INTI-SAC", "fullName": "Presostato", "rangeLabel": "Presostato"}]}, {"id": "luxómetro", "name": "Luxómetro", "icon": "sun", "category": "Electricidad", "variants": [{"code": "LAB- 34", "name": "Luxometro", "trazabilidad": "INTI-SAC", "fullName": "Luxometro", "rangeLabel": "Luxometro"}]}, {"id": "otros_instrumentos_especiales", "name": "Otros Instrumentos Especiales", "icon": "wrench", "category": "Otros", "variants": [{"code": "LAB- 31", "name": "Grindometros", "trazabilidad": "OAA", "fullName": "Grindometros", "rangeLabel": "Grindometros"}, {"code": "LAB- 43", "name": "Medidor de distancia hasta 10 metros.", "trazabilidad": "INTI-SAC", "fullName": "Medidor de distancia hasta 10 metros.", "rangeLabel": "Medidor de distancia hasta 10 metros."}, {"code": "LAB- 72", "name": "Plantilla de pvc x unidad hasta 2mm", "trazabilidad": "OAA", "fullName": "Plantilla de pvc x unidad hasta 2mm", "rangeLabel": "Plantilla de pvc x unidad hasta 2mm"}, {"code": "LAB- 90", "name": "Tensiometro digital (para personas)", "trazabilidad": "INTI-SAC", "fullName": "Tensiometro digital (para personas)", "rangeLabel": "Tensiometro digital (para personas)"}, {"code": "LAB- 94", "name": "Adicional por punto extra", "trazabilidad": "INTI-SAC", "fullName": "Adicional por punto extra", "rangeLabel": "Adicional por punto extra"}]}];
 
-        // Equipos más habituales en industria y talleres (Atajo rápido en 1 clic)
-        const QUICK_INSTRUMENTS = [
-            { code: 'LAB- 04', name: 'Calibre / Pie de rey', icon: 'ruler', cat: 'Dimensional' },
-            { code: 'LAB- 35', name: 'Manómetro / Vacuómetro', icon: 'gauge', cat: 'Presión' },
-            { code: 'LAB- 91', name: 'Termohigrómetro', icon: 'thermometer', cat: 'Temperatura' },
-            { code: 'LAB- 49', name: 'Micrómetro exterior', icon: 'crosshair', cat: 'Dimensional' },
-            { code: 'LAB- 80', name: 'Reloj Comparador', icon: 'clock', cat: 'Dimensional' },
-            { code: 'LAB- 96', name: 'Torquímetro', icon: 'wrench', cat: 'Fuerza' },
-            { code: 'LAB- 68', name: 'Multímetro / Tester', icon: 'zap', cat: 'Electricidad' },
-            { code: 'LAB- 70', name: 'Pinza Amperométrica', icon: 'activity', cat: 'Electricidad' },
-            { code: 'LAB- 03', name: 'Balanza industrial / lab', icon: 'scale', cat: 'Masa' },
-            { code: 'LAB- 23', name: 'Decibelímetro', icon: 'volume-2', cat: 'Acústica' },
-            { code: 'LAB- 47', name: 'Telurímetro (Puesta a tierra)', icon: 'shield-alert', cat: 'Electricidad' },
-            { code: 'LAB- 46', name: 'Medidor de Pintura / Espesor', icon: 'layers', cat: 'Dimensional' }
+        const CATEGORIES = [
+            { id: 'all', label: 'Todos' },
+            { id: 'Dimensional', label: '📏 Dimensional' },
+            { id: 'Presión', label: '⏱️ Presión' },
+            { id: 'Temperatura', label: '🌡️ Temperatura' },
+            { id: 'Electricidad', label: '⚡ Electricidad' },
+            { id: 'Fuerza', label: '🔧 Fuerza / Torque' },
+            { id: 'Masa', label: '⚖️ Masa / Balanzas' },
+            { id: 'Acústica', label: '🔊 Acústica / Tiempo' },
+            { id: 'Química', label: '🧪 Química / Gases' },
+            { id: 'Otros', label: '➕ Otros' }
         ];
 
         const Icon = ({ name, className = "", size = 20 }) => {
@@ -105,7 +110,7 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbws8CL_jvaeCFA5s25wAVvP6Go2X_342yyXRjUrxRcqCFQFnus33UeqVNmI3JcGjeY/exec";
 
         function PresupuestoApp() {
-            // Datos cliente traídos de la página anterior
+            // Datos del cliente desde la URL
             const [clientData, setClientData] = useState({
                 empresa: '',
                 contacto: '',
@@ -113,70 +118,119 @@
                 telefono: ''
             });
 
-            const [viewMode, setViewMode] = useState('quick'); // 'quick' | 'search' | 'text'
-            const [selectedItems, setSelectedItems] = useState({}); // { codeOrName: { name, qty, code } }
+            const [selectedCategory, setSelectedCategory] = useState('all');
             const [searchTerm, setSearchTerm] = useState('');
+            const [selectedVariants, setSelectedVariants] = useState({}); // { code: { code, name, rangeLabel, familyName, qty } }
+            const [activeFamilyModal, setActiveFamilyModal] = useState(null); // Family object currently open in modal
+            const [showTextMode, setShowTextMode] = useState(false);
             const [freeTextList, setFreeTextList] = useState('');
             const [observaciones, setObservaciones] = useState('');
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [submitted, setSubmitted] = useState(false);
+            const [showCartDrawer, setShowCartDrawer] = useState(false);
 
             useEffect(() => {
                 document.body.classList.add('loaded');
 
                 const params = new URLSearchParams(window.location.search);
-                const empresa = params.get('empresa') || '';
-                const contacto = params.get('contacto') || '';
-                const email = params.get('email') || '';
-
-                setClientData(prev => ({
-                    ...prev,
-                    empresa: empresa || prev.empresa,
-                    contacto: contacto || prev.contacto,
-                    email: email || prev.email
-                }));
+                setClientData({
+                    empresa: params.get('empresa') || '',
+                    contacto: params.get('contacto') || '',
+                    email: params.get('email') || '',
+                    telefono: params.get('telefono') || ''
+                });
             }, []);
 
-            // Sumar o restar cantidades
-            const updateItemQty = (code, name, delta) => {
-                setSelectedItems(prev => {
-                    const current = prev[code]?.qty || 0;
+            // Actualizar cantidad de una variante específica
+            const updateVariantQty = (variant, delta, familyName) => {
+                setSelectedVariants(prev => {
+                    const current = prev[variant.code]?.qty || 0;
                     const next = Math.max(0, current + delta);
                     const updated = { ...prev };
                     if (next === 0) {
-                        delete updated[code];
+                        delete updated[variant.code];
                     } else {
-                        updated[code] = { code, name, qty: next };
+                        updated[variant.code] = {
+                            code: variant.code,
+                            name: variant.fullName || variant.name,
+                            rangeLabel: variant.rangeLabel || variant.name,
+                            familyName: familyName || variant.name,
+                            trazabilidad: variant.trazabilidad || '',
+                            qty: next
+                        };
                     }
                     return updated;
                 });
             };
 
-            // Total de equipos seleccionados
-            const totalEquipos = useMemo(() => {
-                return Object.values(selectedItems).reduce((sum, item) => sum + item.qty, 0);
-            }, [selectedItems]);
+            // Contar cuántos equipos tiene una familia seleccionados
+            const getFamilySelectedQty = (family) => {
+                return family.variants.reduce((sum, v) => {
+                    return sum + (selectedVariants[v.code]?.qty || 0);
+                }, 0);
+            };
 
-            // Filtrar instrumentos del catálogo completo
-            const catalogResults = useMemo(() => {
-                if (!searchTerm.trim()) return [];
-                const clean = searchTerm.toLowerCase().trim();
-                return RAW_INSTRUMENTS.filter(i => 
-                    i.name.toLowerCase().includes(clean) || 
-                    i.code.toLowerCase().includes(clean) ||
-                    i.category.toLowerCase().includes(clean)
-                ).slice(0, 15);
-            }, [searchTerm]);
+            // Total general de equipos en el carrito
+            const totalEquipos = useMemo(() => {
+                return Object.values(selectedVariants).reduce((sum, item) => sum + item.qty, 0);
+            }, [selectedVariants]);
+
+            // Filtrar familias por categoría y búsqueda
+            const filteredFamilies = useMemo(() => {
+                return FAMILIES_DATA.filter(family => {
+                    // Filtro categoría
+                    const matchCat = selectedCategory === 'all' || family.category === selectedCategory;
+                    
+                    // Filtro búsqueda (en nombre de familia o en nombres de sus variantes/rangos)
+                    if (!searchTerm.trim()) return matchCat;
+                    const clean = searchTerm.toLowerCase().trim();
+                    const matchFamilyName = family.name.toLowerCase().includes(clean);
+                    const matchVariant = family.variants.some(v => 
+                        v.name.toLowerCase().includes(clean) || 
+                        v.code.toLowerCase().includes(clean)
+                    );
+                    
+                    return matchCat && (matchFamilyName || matchVariant);
+                });
+            }, [selectedCategory, searchTerm]);
+
+            // Manejo de clic en una tarjeta de familia
+            const handleFamilyClick = (family) => {
+                if (family.variants.length === 1) {
+                    // Si solo tiene 1 variante, suma 1 directamente al tocar
+                    const singleVariant = family.variants[0];
+                    const currentQty = selectedVariants[singleVariant.code]?.qty || 0;
+                    if (currentQty === 0) {
+                        updateVariantQty(singleVariant, 1, family.name);
+                    }
+                } else {
+                    // Si tiene múltiples rangos/variantes, abre el selector de rangos
+                    setActiveFamilyModal(family);
+                }
+            };
 
             const handleSubmitQuote = async (e) => {
                 e.preventDefault();
                 
                 if (totalEquipos === 0 && !freeTextList.trim()) {
-                    alert('Por favor agrega al menos un equipo o escribe tu lista.');
+                    alert('Por favor selecciona al menos un equipo o escribe tu lista.');
+                    return;
+                }
+
+                if (!clientData.email.trim() && !clientData.empresa.trim() && !clientData.telefono.trim()) {
+                    alert('Por favor ingresá tu Empresa, Email o Teléfono para que podamos enviarte la cotización.');
                     return;
                 }
 
                 setIsSubmitting(true);
+
+                // Armamos el carrito con el formato adecuado
+                const carritoFormatted = Object.values(selectedVariants).map(v => ({
+                    code: v.code,
+                    name: `${v.familyName} - ${v.rangeLabel} (${v.code})`,
+                    qty: v.qty,
+                    trazabilidad: v.trazabilidad
+                }));
 
                 const payload = {
                     tipo_evento: 'SOLICITUD_PRESUPUESTO_CALIBRACION',
@@ -185,7 +239,7 @@
                     contacto: clientData.contacto || '',
                     email: clientData.email || '',
                     telefono: clientData.telefono || '',
-                    carrito: Object.values(selectedItems),
+                    carrito: carritoFormatted,
                     total_equipos: totalEquipos,
                     lista_escrita_libre: freeTextList || '',
                     descuento_aplicado: '10% OFF',
@@ -212,9 +266,9 @@
             return (
                 <div className="max-w-xl mx-auto px-4 py-5 sm:py-6">
                     
-                    {/* Header Minimalista */}
+                    {/* Header Minimalista con Logo */}
                     <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-                        <a href="index.html" className="flex items-center gap-2 text-xs font-semibold text-gray-300 hover:text-white no-underline">
+                        <a href="index.html" className="flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-white no-underline">
                             <Icon name="arrow-left" size={16} />
                             <span>Volver</span>
                         </a>
@@ -228,237 +282,282 @@
 
                     {!submitted ? (
                         <>
-                            {/* Título & Beneficio Directo */}
-                            <div className="mb-5">
+                            {/* Título & Instrucción */}
+                            <div className="mb-3">
                                 <h1 className="text-lg sm:text-xl font-bold text-white leading-tight mb-1">
-                                    Armá tu cotización en 3 clics
+                                    Cotizá tus calibraciones en 3 clics
                                 </h1>
                                 <p className="text-xs text-gray-300 leading-relaxed">
-                                    Tocá los instrumentos que tenés en tu empresa para sumarlos al carrito con <strong>10% OFF</strong>.
+                                    Elegí los instrumentos que tenés en tu empresa para armar el presupuesto con <strong>10% OFF</strong>.
                                 </p>
                             </div>
 
-                            {/* Pestañas de Modo: Selección Rápida | Buscar en Catálogo | Escribir a mano */}
-                            <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl mb-4 border border-white/10 text-xs">
-                                <button
-                                    onClick={() => setViewMode('quick')}
-                                    className={`py-2 px-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'quick' 
-                                            ? 'bg-[#FFC700] text-[#002654] shadow' 
-                                            : 'text-gray-300 hover:text-white'
-                                    }`}
-                                >
-                                    <Icon name="zap" size={14} />
-                                    <span>Rápido</span>
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('search')}
-                                    className={`py-2 px-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'search' 
-                                            ? 'bg-[#FFC700] text-[#002654] shadow' 
-                                            : 'text-gray-300 hover:text-white'
-                                    }`}
-                                >
-                                    <Icon name="search" size={14} />
-                                    <span>Buscar</span>
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('text')}
-                                    className={`py-2 px-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1.5 ${
-                                        viewMode === 'text' 
-                                            ? 'bg-[#FFC700] text-[#002654] shadow' 
-                                            : 'text-gray-300 hover:text-white'
-                                    }`}
-                                >
-                                    <Icon name="pen-tool" size={14} />
-                                    <span>Escribir</span>
-                                </button>
+                            {/* Badge de cliente vinculado o campos rápidos si viene directo */}
+                            {(clientData.empresa || clientData.email) ? (
+                                <div className="mb-4 p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
+                                    <div className="flex items-center gap-2 text-gray-300 overflow-hidden">
+                                        <div className="p-1 rounded bg-[#FFC700]/20 text-[#FFC700] shrink-0">
+                                            <Icon name="building" size={14} />
+                                        </div>
+                                        <span className="truncate">
+                                            Cotizando para: <strong className="text-white">{clientData.empresa || clientData.contacto || clientData.email}</strong>
+                                        </span>
+                                    </div>
+                                    <span className="shrink-0 text-[10px] text-green-400 font-bold bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">
+                                        Vinculado
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-white/15 space-y-2">
+                                    <div className="text-[11px] font-bold text-[#FFC700] flex items-center gap-1.5">
+                                        <Icon name="user-check" size={14} />
+                                        <span>Tus datos de contacto (para enviarte la cotización):</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <input 
+                                            type="text"
+                                            value={clientData.empresa}
+                                            onChange={e => setClientData(prev => ({ ...prev, empresa: e.target.value }))}
+                                            placeholder="Empresa o Razón Social *"
+                                            className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
+                                        />
+                                        <input 
+                                            type="email"
+                                            value={clientData.email}
+                                            onChange={e => setClientData(prev => ({ ...prev, email: e.target.value }))}
+                                            placeholder="Email de contacto *"
+                                            className="bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Buscador Rápido */}
+                            <div className="relative mb-3">
+                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <Icon name="search" size={16} />
+                                </div>
+                                <input 
+                                    type="text" 
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                    placeholder="Buscar instrumento o rango (ej: calibre, 0-300, manómetro)..."
+                                    className="w-full bg-black/40 border border-white/15 rounded-xl pl-9 pr-9 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FFC700] transition-colors"
+                                />
+                                {searchTerm && (
+                                    <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1">
+                                        <Icon name="x" size={14} />
+                                    </button>
+                                )}
                             </div>
 
-                            {/* MODO 1: SELECCIÓN RÁPIDA (TOUCH Y LISTO) */}
-                            {viewMode === 'quick' && (
-                                <div className="space-y-4 animate-fadeIn">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                                        {QUICK_INSTRUMENTS.map(item => {
-                                            const qty = selectedItems[item.code]?.qty || 0;
-                                            const isSelected = qty > 0;
+                            {/* Filtro por Categorías (Scroll horizontal de pastillas) */}
+                            <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none text-xs">
+                                {CATEGORIES.map(cat => {
+                                    const isSel = selectedCategory === cat.id;
+                                    return (
+                                        <button
+                                            key={cat.id}
+                                            onClick={() => setSelectedCategory(cat.id)}
+                                            className={`shrink-0 py-1.5 px-3 rounded-xl font-semibold transition-all ${
+                                                isSel 
+                                                    ? 'bg-[#FFC700] text-[#002654] font-bold shadow' 
+                                                    : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10'
+                                            }`}
+                                        >
+                                            {cat.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
 
-                                            return (
-                                                <div 
-                                                    key={item.code}
-                                                    onClick={() => !isSelected && updateItemQty(item.code, item.name, 1)}
-                                                    className={`p-3 rounded-2xl border transition-all duration-200 select-none flex flex-col justify-between relative cursor-pointer min-h-[95px] ${
-                                                        isSelected 
-                                                            ? 'bg-gradient-to-b from-[#002654] to-[#0a1e36] border-[#FFC700] shadow-md shadow-[#FFC700]/20' 
-                                                            : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95'
-                                                    }`}
-                                                >
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-[#FFC700] text-[#002654]' : 'bg-white/10 text-gray-300'}`}>
-                                                            <Icon name={item.icon} size={16} />
-                                                        </div>
-                                                        {isSelected && (
-                                                            <span className="text-[10px] font-black bg-[#FFC700] text-[#002654] px-1.5 py-0.2 rounded-full">
-                                                                {qty}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                            {/* Grilla de Botones de Familias de Instrumentos */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-6">
+                                {filteredFamilies.map(family => {
+                                    const familyQty = getFamilySelectedQty(family);
+                                    const isSelected = familyQty > 0;
+                                    const hasMultipleRanges = family.variants.length > 1;
+                                    const singleVariant = family.variants[0];
 
-                                                    <div className="text-xs font-bold text-white leading-tight mb-2">
-                                                        {item.name}
-                                                    </div>
+                                    return (
+                                        <div 
+                                            key={family.id}
+                                            onClick={() => handleFamilyClick(family)}
+                                            className={`p-3 rounded-2xl border transition-all duration-200 select-none flex flex-col justify-between relative cursor-pointer min-h-[105px] ${
+                                                isSelected 
+                                                    ? 'bg-gradient-to-b from-[#002654] to-[#0a1e36] border-[#FFC700] shadow-md shadow-[#FFC700]/25 ring-1 ring-[#FFC700]/50' 
+                                                    : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-95'
+                                            }`}
+                                        >
+                                            {/* Cabecera de la tarjeta: Icono + Badge de cantidad */}
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-[#FFC700] text-[#002654]' : 'bg-white/10 text-gray-300'}`}>
+                                                    <Icon name={family.icon} size={16} />
+                                                </div>
+                                                {isSelected ? (
+                                                    <span className="text-[10px] font-black bg-[#FFC700] text-[#002654] px-2 py-0.5 rounded-full shadow">
+                                                        {familyQty} en carrito
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] font-semibold text-gray-400">
+                                                        {hasMultipleRanges ? `${family.variants.length} rangos` : '1 rango'}
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                                    {/* Controles de cantidad cuando está seleccionado */}
+                                            {/* Nombre del Instrumento */}
+                                            <div className="text-xs font-bold text-white leading-tight mb-2 flex-1">
+                                                {family.name}
+                                            </div>
+
+                                            {/* Botón o control de acción */}
+                                            {hasMultipleRanges ? (
+                                                <div className="mt-auto">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); setActiveFamilyModal(family); }}
+                                                        className={`w-full py-1.5 px-2 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1 transition-all ${
+                                                            isSelected 
+                                                                ? 'bg-[#FFC700] text-[#002654]' 
+                                                                : 'bg-white/10 text-white hover:bg-[#FFC700] hover:text-[#002654]'
+                                                        }`}
+                                                    >
+                                                        <span>{isSelected ? 'Modificar rangos' : 'Elegir rango'}</span>
+                                                        <Icon name="chevron-right" size={12} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                /* Si tiene 1 solo rango, control de cantidad directo en la card */
+                                                <div className="mt-auto" onClick={e => e.stopPropagation()}>
                                                     {isSelected ? (
-                                                        <div className="flex items-center justify-between bg-black/40 rounded-xl p-0.5 border border-[#FFC700]/40" onClick={e => e.stopPropagation()}>
+                                                        <div className="flex items-center justify-between bg-black/40 rounded-xl p-0.5 border border-[#FFC700]/40">
                                                             <button 
-                                                                onClick={() => updateItemQty(item.code, item.name, -1)}
+                                                                onClick={() => updateVariantQty(singleVariant, -1, family.name)}
                                                                 className="w-7 h-7 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
                                                             >
                                                                 <Icon name="minus" size={13} />
                                                             </button>
                                                             <span className="text-xs font-bold text-white px-1">
-                                                                {qty}
+                                                                {familyQty}
                                                             </span>
                                                             <button 
-                                                                onClick={() => updateItemQty(item.code, item.name, 1)}
+                                                                onClick={() => updateVariantQty(singleVariant, 1, family.name)}
                                                                 className="w-7 h-7 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
                                                             >
                                                                 <Icon name="plus" size={13} />
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <div className="text-[11px] font-semibold text-[#FFC700]/70 flex items-center gap-1">
-                                                            <span>+ Tocar para sumar</span>
-                                                        </div>
+                                                        <button 
+                                                            onClick={() => updateVariantQty(singleVariant, 1, family.name)}
+                                                            className="w-full py-1.5 px-2 rounded-lg bg-white/10 hover:bg-[#FFC700] hover:text-[#002654] text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
+                                                        >
+                                                            <Icon name="plus" size={12} />
+                                                            <span>Agregar</span>
+                                                        </button>
                                                     )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <p className="text-[11px] text-gray-400 text-center pt-1">
-                                        ¿Buscás otro equipo? Usá la pestaña <strong>Buscar</strong> o <strong>Escribir</strong> arriba.
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* MODO 2: BUSCADOR EN EL CATÁLOGO COMPLETO (109 EQUIPOS) */}
-                            {viewMode === 'search' && (
-                                <div className="space-y-3 animate-fadeIn">
-                                    <div className="relative">
-                                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                                            <Icon name="search" size={16} />
-                                        </div>
-                                        <input 
-                                            type="text" 
-                                            autoFocus
-                                            value={searchTerm}
-                                            onChange={e => setSearchTerm(e.target.value)}
-                                            placeholder="Escribe el equipo (ej: calibre, manómetro, tacómetro, luxómetro)..."
-                                            className="w-full bg-black/40 border border-white/20 rounded-xl pl-9 pr-9 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FFC700]"
-                                        />
-                                        {searchTerm && (
-                                            <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1">
-                                                <Icon name="x" size={14} />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {searchTerm.trim() ? (
-                                        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                                            {catalogResults.map(item => {
-                                                const qty = selectedItems[item.code]?.qty || 0;
-                                                const isSelected = qty > 0;
-
-                                                return (
-                                                    <div key={item.code} className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs">
-                                                        <div className="flex-1 pr-2">
-                                                            <div className="font-semibold text-white leading-tight">{item.name}</div>
-                                                            <div className="text-[10px] text-gray-400">{item.code} • {item.category}</div>
-                                                        </div>
-
-                                                        {isSelected ? (
-                                                            <div className="flex items-center bg-[#002654] border border-[#FFC700] rounded-lg">
-                                                                <button onClick={() => updateItemQty(item.code, item.name, -1)} className="px-2 py-1 text-[#FFC700]">-</button>
-                                                                <span className="px-2 font-bold text-white">{qty}</span>
-                                                                <button onClick={() => updateItemQty(item.code, item.name, 1)} className="px-2 py-1 text-[#FFC700]">+</button>
-                                                            </div>
-                                                        ) : (
-                                                            <button 
-                                                                onClick={() => updateItemQty(item.code, item.name, 1)}
-                                                                className="px-3 py-1.5 bg-[#FFC700] text-[#002654] rounded-lg font-bold text-[11px]"
-                                                            >
-                                                                + Agregar
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-
-                                            {catalogResults.length === 0 && (
-                                                <div className="text-center py-6 text-xs text-gray-400">
-                                                    No encontramos ese equipo exacto. Podés usar la pestaña <strong>Escribir</strong> para ponerlo libremente.
                                                 </div>
                                             )}
                                         </div>
-                                    ) : (
-                                        <p className="text-xs text-gray-400 text-center py-4">
-                                            Escribe una palabra clave para buscar entre los 109 instrumentos que calibramos.
-                                        </p>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Alternativa: Escribir lista libre */}
+                            <div className="mb-6">
+                                {!showTextMode ? (
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowTextMode(true)}
+                                        className="w-full py-2.5 px-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-semibold text-gray-300 hover:text-white transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Icon name="pen-tool" size={14} />
+                                        <span>¿Preferís escribir o dictar tu lista libremente? Tocá acá</span>
+                                    </button>
+                                ) : (
+                                    <div className="bg-white/5 border border-white/15 rounded-2xl p-4 animate-fadeIn">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                                                <Icon name="pen-tool" size={14} className="text-[#FFC700]" />
+                                                <span>Detalle escrito / Equipos adicionales:</span>
+                                            </label>
+                                            <button 
+                                                onClick={() => setShowTextMode(false)}
+                                                className="text-xs text-gray-400 hover:text-white"
+                                            >
+                                                Ocultar
+                                            </button>
+                                        </div>
+                                        <textarea 
+                                            rows={3}
+                                            value={freeTextList}
+                                            onChange={e => setFreeTextList(e.target.value)}
+                                            placeholder="Ej: Tengo además 2 manómetros de 10 bar, 3 calibres de 200mm y 1 micrómetro digital..."
+                                            className="w-full bg-black/40 border border-white/15 rounded-xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
+                                        ></textarea>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Resumen del Carrito Desplegable */}
+                            {totalEquipos > 0 && (
+                                <div className="mb-4 p-3.5 rounded-2xl bg-black/30 border border-[#FFC700]/30 animate-fadeIn">
+                                    <div 
+                                        onClick={() => setShowCartDrawer(!showCartDrawer)}
+                                        className="flex items-center justify-between cursor-pointer text-xs font-bold text-[#FFC700] select-none"
+                                    >
+                                        <span className="flex items-center gap-1.5">
+                                            <Icon name="shopping-bag" size={15} />
+                                            <span>Equipos seleccionados ({totalEquipos}):</span>
+                                        </span>
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-[10px] text-gray-400">{showCartDrawer ? 'Ocultar' : 'Ver detalle'}</span>
+                                            <Icon name={showCartDrawer ? "chevron-up" : "chevron-down"} size={14} />
+                                        </div>
+                                    </div>
+
+                                    {/* Lista detallada de lo que tiene el carrito */}
+                                    {showCartDrawer && (
+                                        <div className="mt-2.5 pt-2.5 border-t border-white/10 space-y-1.5 max-h-48 overflow-y-auto pr-1 text-xs">
+                                            {Object.values(selectedVariants).map(item => (
+                                                <div key={item.code} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+                                                    <div className="flex-1 pr-2">
+                                                        <div className="font-bold text-white leading-tight">{item.familyName}</div>
+                                                        <div className="text-[11px] text-[#FFC700]">{item.rangeLabel}</div>
+                                                        <div className="text-[10px] text-gray-400">{item.code}</div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center bg-black/40 rounded-lg border border-white/10">
+                                                            <button 
+                                                                onClick={() => updateVariantQty(item, -1, item.familyName)}
+                                                                className="px-2 py-0.5 text-[#FFC700] hover:bg-white/10"
+                                                            >
+                                                                -
+                                                            </button>
+                                                            <span className="px-2 font-bold text-white text-xs">{item.qty}</span>
+                                                            <button 
+                                                                onClick={() => updateVariantQty(item, 1, item.familyName)}
+                                                                className="px-2 py-0.5 text-[#FFC700] hover:bg-white/10"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => updateVariantQty(item, -item.qty, item.familyName)}
+                                                            className="text-gray-400 hover:text-red-400 px-1"
+                                                            title="Eliminar"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* MODO 3: ESCRIBIR LA LISTA A MANO (CERO FRICCIÓN) */}
-                            {viewMode === 'text' && (
-                                <div className="space-y-3 animate-fadeIn">
-                                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                                        <label className="block text-xs font-bold text-gray-300 mb-1.5">
-                                            Escribí tus equipos como te sea más cómodo:
-                                        </label>
-                                        <textarea 
-                                            rows={4}
-                                            value={freeTextList}
-                                            onChange={e => setFreeTextList(e.target.value)}
-                                            placeholder="Ej: Tengo 3 calibres de 200mm, 2 manómetros de 10 bar y 1 termohigrómetro digital..."
-                                            className="w-full bg-black/40 border border-white/15 rounded-xl p-3 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FFC700]"
-                                        ></textarea>
-                                        <p className="text-[11px] text-gray-400 mt-2">
-                                            📌 No te preocupes por códigos ni marcas exactas. Nuestro laboratorio lo revisa y te arma el presupuesto.
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* RESUMEN DEL CARRITO (Si hay algo seleccionado) */}
-                            {totalEquipos > 0 && (
-                                <div className="mt-5 p-3.5 rounded-2xl bg-black/30 border border-[#FFC700]/30 animate-fadeIn">
-                                    <div className="flex items-center justify-between text-xs font-bold text-[#FFC700] mb-2">
-                                        <span className="flex items-center gap-1.5">
-                                            <Icon name="shopping-bag" size={15} />
-                                            Tu Selección ({totalEquipos} {totalEquipos === 1 ? 'equipo' : 'equipos'}):
-                                        </span>
-                                        <span className="text-[10px] bg-[#FFC700]/20 text-[#FFC700] px-2 py-0.5 rounded">
-                                            10% OFF Incluido
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {Object.values(selectedItems).map(item => (
-                                            <span key={item.code} className="inline-flex items-center gap-1.5 bg-white/10 border border-white/10 text-white text-xs px-2.5 py-1 rounded-lg">
-                                                <strong>{item.qty}x</strong> {item.name}
-                                                <button onClick={() => updateItemQty(item.code, item.name, -item.qty)} className="text-gray-400 hover:text-red-400 ml-1">
-                                                    ×
-                                                </button>
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-
-                            {/* BARRA FIJA INFERIOR (CTA DE ENVÍO DIRECTO) */}
-                            <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-[#001a3d]/95 backdrop-blur-lg border-t border-white/10 z-50 shadow-2xl">
+                            {/* BARRA FIJA INFERIOR (Mobile Sticky Footer) */}
+                            <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-[#001a3d]/95 backdrop-blur-lg border-t border-white/10 z-40 shadow-2xl">
                                 <div className="max-w-xl mx-auto flex items-center justify-between gap-3">
                                     <div>
                                         <div className="text-xs font-extrabold text-white flex items-center gap-1.5">
@@ -476,12 +575,12 @@
                                         {isSubmitting ? (
                                             <>
                                                 <Icon name="loader-2" className="animate-spin w-4 h-4" />
-                                                <span>Enviando pedido...</span>
+                                                <span>Enviando...</span>
                                             </>
                                         ) : (
                                             <>
                                                 <Icon name="send" size={16} />
-                                                <span>Pedir Presupuesto con 10% OFF</span>
+                                                <span>Pedir Presupuesto (10% OFF)</span>
                                             </>
                                         )}
                                     </button>
@@ -489,7 +588,7 @@
                             </div>
                         </>
                     ) : (
-                        /* PANTALLA DE ÉXITO ULTRA LIMPIA */
+                        /* PANTALLA DE CONFIRMACIÓN ULTRA LIMPIA */
                         <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center backdrop-blur-xl animate-fadeIn shadow-2xl mt-4">
                             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_25px_rgba(34,197,94,0.4)]">
                                 <Icon name="check-circle" size={32} className="text-white" />
@@ -509,6 +608,111 @@
                                 >
                                     Volver al Inicio
                                 </a>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL / BOTTOM SHEET DE RANGOS DEL INSTRUMENTO */}
+                    {activeFamilyModal && (
+                        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+                            <div className="bg-[#001a3d] border border-white/20 rounded-t-3xl sm:rounded-2xl p-5 w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl">
+                                
+                                {/* Cabecera del modal */}
+                                <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 rounded-xl bg-[#FFC700] text-[#002654]">
+                                            <Icon name={activeFamilyModal.icon} size={18} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
+                                                {activeFamilyModal.name}
+                                            </h3>
+                                            <p className="text-[11px] text-gray-400">
+                                                Seleccioná las medidas o rangos que tenés:
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setActiveFamilyModal(null)}
+                                        className="p-1.5 rounded-full text-gray-400 hover:text-white hover:bg-white/10"
+                                    >
+                                        <Icon name="x" size={18} />
+                                    </button>
+                                </div>
+
+                                {/* Lista de Rangos / Variantes */}
+                                <div className="overflow-y-auto space-y-2 py-1 pr-1 flex-1">
+                                    {activeFamilyModal.variants.map(variant => {
+                                        const qty = selectedVariants[variant.code]?.qty || 0;
+                                        const isSelected = qty > 0;
+
+                                        return (
+                                            <div 
+                                                key={variant.code}
+                                                className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                                                    isSelected 
+                                                        ? 'bg-[#002654] border-[#FFC700] shadow-sm' 
+                                                        : 'bg-white/5 border-white/10'
+                                                }`}
+                                            >
+                                                <div className="flex-1 min-w-0 pr-2">
+                                                    <div className="text-xs font-bold text-white leading-tight">
+                                                        {variant.rangeLabel}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <span className="text-[10px] font-mono text-gray-400">{variant.code}</span>
+                                                        {variant.trazabilidad && (
+                                                            <span className="text-[10px] text-[#FFC700]/90 font-medium">{variant.trazabilidad}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Controles de cantidad */}
+                                                {isSelected ? (
+                                                    <div className="flex items-center bg-black/40 rounded-xl p-0.5 border border-[#FFC700]/50">
+                                                        <button 
+                                                            onClick={() => updateVariantQty(variant, -1, activeFamilyModal.name)}
+                                                            className="w-8 h-8 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
+                                                        >
+                                                            <Icon name="minus" size={14} />
+                                                        </button>
+                                                        <span className="text-xs font-bold text-white px-2">
+                                                            {qty}
+                                                        </span>
+                                                        <button 
+                                                            onClick={() => updateVariantQty(variant, 1, activeFamilyModal.name)}
+                                                            className="w-8 h-8 flex items-center justify-center text-[#FFC700] hover:bg-white/10 rounded-lg active:scale-90"
+                                                        >
+                                                            <Icon name="plus" size={14} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button 
+                                                        onClick={() => updateVariantQty(variant, 1, activeFamilyModal.name)}
+                                                        className="py-1.5 px-3 rounded-lg bg-white/10 hover:bg-[#FFC700] hover:text-[#002654] text-white text-xs font-bold transition-all flex items-center gap-1"
+                                                    >
+                                                        <Icon name="plus" size={13} />
+                                                        <span>Sumar</span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Botón Listo en el modal */}
+                                <div className="pt-3 mt-2 border-t border-white/10 flex items-center justify-between">
+                                    <span className="text-xs text-gray-300">
+                                        Total en {activeFamilyModal.name}: <strong>{getFamilySelectedQty(activeFamilyModal)}</strong>
+                                    </span>
+                                    <button 
+                                        onClick={() => setActiveFamilyModal(null)}
+                                        className="py-2.5 px-6 rounded-xl bg-[#FFC700] hover:bg-[#ffdb4d] text-[#002654] text-xs font-bold transition-all shadow"
+                                    >
+                                        Listo
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
                     )}
